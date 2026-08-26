@@ -607,7 +607,7 @@ Thin pages: `src/app/page.tsx`, `src/app/register/page.tsx`
 
 ---
 
-### Phase 6: Login UI, logout, and MCQ stub - PLANNED
+### Phase 6: Login UI, logout, and MCQ stub - COMPLETED
 
 **Objective:** Drive login, stub, and logout from failing UI tests, including `sessionStorage` side effects.
 
@@ -644,6 +644,12 @@ Thin pages: `src/app/login/page.tsx`, `src/app/mcq/page.tsx`
 | 6.14 | log out navigates to /login | `router.push("/login")` |
 
 **RED expected:** components missing; navigation or storage assertions fail.
+
+**RED result (2026-08-26):** `npm test` failed as intended. Missing `@/components/login/login-form` and `@/components/mcq/mcq-stub`. Phases 1–5 stayed green (66 passed). Test Files 2 failed | 9 passed.
+
+**GREEN result (2026-08-26):** After LoginForm + McqStub: `Test Files 11 passed (11)`, `Tests 80 passed (80)` (14 Phase 6 cases + 66 prior). `npm run lint` exited 0.
+
+**AC proved:** AC-04 (hashed wire password on login submit, 6.4), AC-08 (navigate to empty `/mcq`, 6.6 and 6.9), AC-09 (logout POST, clear `gq.*` keys, go to `/login`, 6.12–6.14), AC-12 client validation on login (6.2–6.3). 401 shows the exact string `Invalid username or password.` (6.7).
 
 #### GREEN tasks (only after RED)
 
@@ -709,7 +715,7 @@ These tests prove the TDD artifacts were not deleted. They do **not** replace 1.
 
 When a phase finishes, update **Implementation Phases** (RED/GREEN log), **Key Files**, **Acceptance Criteria**, **Troubleshooting Guide**, and **Current Status**. Do not let the PRD drift from the code.
 
-### Key Files (planned — none of this is implemented yet)
+### Key Files
 
 Tests are listed before production files because TDD writes them first.
 
@@ -725,7 +731,7 @@ Tests are listed before production files because TDD writes them first.
 - `src/components/register/register-form.test.tsx` / `register-form.tsx` — Phase 5
 - `src/components/login/login-form.test.tsx` / `login-form.tsx` — Phase 6
 - `src/components/mcq/mcq-stub.test.tsx` / `mcq-stub.tsx` — Phase 6
-- `src/lib/acceptance-traceability.test.ts` — Phase 7
+- `src/lib/acceptance-traceability.test.ts` — Phase 7 (not written yet)
 - `src/app/page.tsx`, `register/page.tsx`, `login/page.tsx`, `mcq/page.tsx` — thin route files
 - `migrations/` — `users` table, body must match `USERS_TABLE_SQL`
 - `wrangler.jsonc` — D1 `DB` binding
@@ -946,21 +952,21 @@ Populate with real incidents during implementation. Anticipated issues:
 **Problem:** Register/login throw because `env.DB` is undefined under `npm run dev`.
 **Cause:** D1 is a Workers binding; the Node dev server does not provide it the same way.
 **Solution:** Keep DB access in `src/lib/db.ts`. Prove behavior with mocked tests and `npm run preview`. Do not read `process.env.DB`.
-**Code Reference:** `src/lib/db.ts` (planned)
+**Code Reference:** `src/lib/db.ts`
 
 ### Unique username error surfaces as 500
 
 **Problem:** Second registration returns 500 instead of 409.
 **Cause:** D1 unique constraint not mapped in the service.
 **Solution:** Detect the constraint failure in `createUser` and throw a typed conflict the route maps to 409.
-**Code Reference:** `src/lib/services/user-service.ts` (planned)
+**Code Reference:** `src/lib/services/user-service.ts`
 
 ### Login succeeds in tests but fails in the browser
 
 **Problem:** 401 after a successful registration.
 **Cause:** Client sent plaintext, or hex casing differs, or salt/hash encoding differs between register and login.
 **Solution:** One shared `hashPasswordForWire` and `hashPasswordForStorage`. Tests must use the same helpers as the UI. Compare hex in lowercase.
-**Code Reference:** `src/lib/password.ts` (planned)
+**Code Reference:** `src/lib/password.ts`
 
 ### `getCloudflareContext` crashes Vitest
 
@@ -1005,9 +1011,9 @@ Populate with real incidents during implementation. Anticipated issues:
 ## Current Status
 
 **Last Updated:** 2026-08-26
-**Current Phase:** Phase 5 - Registration UI
-**Status:** COMPLETED (waiting for review before Phase 6)
-**Next Steps:** Human review of Phase 5. After confirmation, implement **Phase 6 only** when explicitly asked (login, logout, MCQ stub).
+**Current Phase:** Phase 6 - Login UI, logout, and MCQ stub
+**Status:** COMPLETED (waiting for review before Phase 7)
+**Next Steps:** Human review of Phase 6. After confirmation, implement **Phase 7 only** when explicitly asked (acceptance-criteria confirmation and Workers-aware check).
 
 **TDD log:**
 - Phase 1 RED/GREEN: password helpers (11 tests).
@@ -1016,24 +1022,8 @@ Populate with real incidents during implementation. Anticipated issues:
 - Phase 4 RED/GREEN: register/login/logout HTTP (15 tests). 51/51 after Phase 4.
 - Phase 5 RED: missing home-links and register-form modules (2 failed suites; 51 prior tests still passed).
 - Phase 5 GREEN: 66/66 tests passed (`npm test`).
-
-**Already true in the repo today:**
-
-- Vitest harness and password helpers (Phase 1).
-- D1 `users` table local and remote (Phase 2).
-- User service CRUD + `verifyCredentials` (Phase 3).
-- HTTP `POST /api/users/register`, `/login`, `/logout` (Phase 4).
-- Home (`/`) and register (`/register`) UI with hashed password on the wire (Phase 5).
-- Login and MCQ stub pages are not built yet.
-
-**Not started:** login/MCQ UI, Phase 6–7 Test Plan files.
-
-**TDD log:**
-- Phase 1 RED/GREEN: password helpers (11 tests).
-- Phase 2 RED/GREEN: schema + `getDb` (9 tests). Local and remote `0001_create_users.sql` applied.
-- Phase 3 RED/GREEN: user service CRUD (16 tests). 36/36 after Phase 3.
-- Phase 4 RED: missing `./route` for register/login/logout (3 failed suites; 36 prior tests still passed).
-- Phase 4 GREEN: 51/51 tests passed (`npm test`).
+- Phase 6 RED: missing login-form and mcq-stub modules (2 failed suites; 66 prior tests still passed).
+- Phase 6 GREEN: 80/80 tests passed (`npm test`). `npm run lint` exited 0.
 
 **Already true in the repo today:**
 
@@ -1041,22 +1031,7 @@ Populate with real incidents during implementation. Anticipated issues:
 - D1 `users` table local and remote (Phase 2).
 - User service CRUD + `verifyCredentials` (Phase 3).
 - HTTP `POST /api/users/register`, `/login`, `/logout` (Phase 4). No JWT or session cookies.
-- Home page is still the default Next.js starter.
+- Home (`/`) and register (`/register`) UI with hashed password on the wire (Phase 5).
+- Login (`/login`), empty `/mcq` stub, logout that clears `gq.*` `sessionStorage` keys (Phase 6).
 
-**Not started:** register/login/MCQ UI, Phases 5–7 Test Plan files.
-
-**TDD log:**
-- Phase 1 RED/GREEN: password helpers (11 tests).
-- Phase 2 RED/GREEN: schema + `getDb` (9 tests). Local migration applied. Real D1 created; remote `0001_create_users.sql` applied 2026-08-26 at user request.
-- Phase 3 RED: missing `@/lib/services/user-service` (1 failed suite; 20 prior tests still passed).
-- Phase 3 GREEN: 36/36 tests passed (`npm test`).
-
-**Already true in the repo today:**
-
-- Vitest harness and password helpers (Phase 1).
-- `USERS_TABLE_SQL`, `getDb()`, D1 binding `DB`, local `users` migration (Phase 2).
-- Real D1 database `quizmaker-db` (`b5346f05-82dc-4fc3-9c46-382efdc665e4`); `0001_create_users.sql` applied locally and remotely (remote apply requested 2026-08-26).
-- User service CRUD + `verifyCredentials` with Zod, mocked D1 in tests (Phase 3).
-- Home page is still the default Next.js starter.
-
-**Not started:** API routes, register/login/MCQ UI, Phases 4–7 Test Plan files.
+**Not started:** Phase 7 traceability tests and recorded `lint` / `build` / `preview` walkthrough.
