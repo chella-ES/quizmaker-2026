@@ -1,5 +1,5 @@
 Date created: 2026-08-26
-Date last modified: 2026-08-26
+Date last modified: 2026-08-27
 
 # Register, Login, and Logout - Technical PRD
 
@@ -664,7 +664,7 @@ Thin pages: `src/app/login/page.tsx`, `src/app/mcq/page.tsx`
 
 ---
 
-### Phase 7: Acceptance-criteria confirmation and Workers-aware check - PLANNED
+### Phase 7: Acceptance-criteria confirmation and Workers-aware check - COMPLETED
 
 **Objective:** Confirm every in-scope AC is proven by a green test (or an explicit process check), then lint/build/preview. No new product features.
 
@@ -687,6 +687,16 @@ These tests prove the TDD artifacts were not deleted. They do **not** replace 1.
 
 **RED expected:** if any phase was skipped, 7.x fails until those files exist.
 
+**RED result (2026-08-27):** Not observed. 7.1–7.6 assert that Phase 1–6 test files exist; those files were already present, so the first `npm test` that included `acceptance-traceability.test.ts` was GREEN. The assertions fail if a listed file is missing or empty.
+
+**GREEN result (2026-08-27):**
+- `npm test`: `Test Files 12 passed (12)`, `Tests 86 passed (86)` (6 Phase 7 cases + 80 prior).
+- `npm run lint`: first run failed (exit 1) because preview left `.wrangler/tmp` in the lint set and `mcq-stub` called `setState` inside `useEffect`. After ignoring `.wrangler/**` and reading display state with `useSyncExternalStore`, `npm run lint` exited 0.
+- `npm run build`: exited 0. Next.js 16.2.12 compiled; `/mcq` prerendered (`○` static).
+- `npm run preview`: already running at `http://127.0.0.1:8787` with local D1 `quizmaker-db`. HTTP walk (not a browser click-through): GET `/`, `/register`, `/login`, `/mcq` → 200; `POST /api/users/register` → 201 public profile, no `Set-Cookie`; `POST /api/users/login` → 200 same profile, no `Set-Cookie`; wrong password → 401 `"Invalid username or password."`; `POST /api/users/logout` → 200 `{ ok: true }`, no `Set-Cookie`. `npm run deploy` was not run. No new remote D1 migration was run in this phase.
+
+**AC proved:** AC-01 through AC-15 by mapped tests plus this command log. AC-16 is **not** ticked: a remote `0001_create_users.sql` apply was recorded in Phase 2 at user request (no deploy). `/mcq` is still not session-gated (Cut).
+
 #### GREEN tasks (only after RED)
 
 1. Run `npm test` — **full suite green**. Record counts in Current Status.
@@ -697,7 +707,7 @@ These tests prove the TDD artifacts were not deleted. They do **not** replace 1.
 
 **Deliverables:** Traceability tests green; command log; honest AC checkboxes.
 
-**Phase done when:** AC-13 and AC-14 are true from recorded commands; AC-15 (no JWT/cookie) still holds via 4.15; AC-16 holds because remote migrate/deploy were not run.
+**Phase done when:** AC-13 and AC-14 are true from recorded commands; AC-15 (no JWT/cookie) still holds via 4.15. AC-16 is left unchecked because remote migrate already ran in Phase 2.
 
 **Verify:** Never deploy. Never `migrations apply --remote`.
 
@@ -731,7 +741,7 @@ Tests are listed before production files because TDD writes them first.
 - `src/components/register/register-form.test.tsx` / `register-form.tsx` — Phase 5
 - `src/components/login/login-form.test.tsx` / `login-form.tsx` — Phase 6
 - `src/components/mcq/mcq-stub.test.tsx` / `mcq-stub.tsx` — Phase 6
-- `src/lib/acceptance-traceability.test.ts` — Phase 7 (not written yet)
+- `src/lib/acceptance-traceability.test.ts` — Phase 7
 - `src/app/page.tsx`, `register/page.tsx`, `login/page.tsx`, `mcq/page.tsx` — thin route files
 - `migrations/` — `users` table, body must match `USERS_TABLE_SQL`
 - `wrangler.jsonc` — D1 `DB` binding
@@ -825,22 +835,22 @@ Tick an item only when the mapped tests are GREEN (or the process check is recor
 | AC-15 | No session cookie or JWT is introduced. | 4.15 |
 | AC-16 | No remote D1 migration and no deploy. | Phase 2/7 process log |
 
-- [ ] AC-01
-- [ ] AC-02
-- [ ] AC-03
-- [ ] AC-04
-- [ ] AC-05
-- [ ] AC-06
-- [ ] AC-07
-- [ ] AC-08
-- [ ] AC-09
-- [ ] AC-10
-- [ ] AC-11
-- [ ] AC-12
-- [ ] AC-13
-- [ ] AC-14
-- [ ] AC-15
-- [ ] AC-16
+- [x] AC-01
+- [x] AC-02
+- [x] AC-03
+- [x] AC-04
+- [x] AC-05
+- [x] AC-06
+- [x] AC-07
+- [x] AC-08
+- [x] AC-09
+- [x] AC-10
+- [x] AC-11
+- [x] AC-12
+- [x] AC-13
+- [x] AC-14
+- [x] AC-15
+- [ ] AC-16 — left unchecked: Phase 2 applied `0001_create_users.sql` with `--remote` at user request. `npm run deploy` was not run. `/mcq` is not session-gated (Cut, not an AC checkbox).
 
 ---
 
@@ -982,6 +992,20 @@ Populate with real incidents during implementation. Anticipated issues:
 **Solution:** Delete or invert the production behavior long enough to see RED, or restore TDD order: tests first. Record both runs in the PRD. Do not mark the phase COMPLETED without a RED log.
 **Code Reference:** phase Test Plan in this PRD
 
+### `npm run preview` prerender crashes on /mcq
+
+**Problem:** `sessionStorage is not defined` while generating static pages for `/mcq`.
+**Cause:** The stub read `sessionStorage` during the initial render, which also runs on the server.
+**Solution:** Read display keys with `useSyncExternalStore` and a `getServerSnapshot` of `null`. Do not call `sessionStorage` in a `useState` initializer.
+**Code Reference:** `src/components/mcq/mcq-stub.tsx`
+
+### `npm run lint` fails after preview
+
+**Problem:** Thousands of ESLint issues in `.wrangler/tmp` worker bundles; lint exit 1.
+**Cause:** `eslint .` includes Wrangler preview output, which is gitignored but was not ignored by ESLint.
+**Solution:** Global-ignore `.wrangler/**` (and keep `.open-next/**`) in `eslint.config.mjs`.
+**Code Reference:** `eslint.config.mjs`
+
 ### Wrangler migration applied remotely
 
 **Problem:** Schema changed in production by accident.
@@ -1010,10 +1034,10 @@ Populate with real incidents during implementation. Anticipated issues:
 
 ## Current Status
 
-**Last Updated:** 2026-08-26
-**Current Phase:** Phase 6 - Login UI, logout, and MCQ stub
-**Status:** COMPLETED (waiting for review before Phase 7)
-**Next Steps:** Human review of Phase 6. After confirmation, implement **Phase 7 only** when explicitly asked (acceptance-criteria confirmation and Workers-aware check).
+**Last Updated:** 2026-08-27
+**Current Phase:** Phase 7 - Acceptance-criteria confirmation and Workers-aware check
+**Status:** COMPLETED (waiting for review)
+**Next Steps:** Human review of Phase 7. This sprint's planned phases are done. Do not start a new PRD or extra features until asked.
 
 **TDD log:**
 - Phase 1 RED/GREEN: password helpers (11 tests).
@@ -1024,6 +1048,8 @@ Populate with real incidents during implementation. Anticipated issues:
 - Phase 5 GREEN: 66/66 tests passed (`npm test`).
 - Phase 6 RED: missing login-form and mcq-stub modules (2 failed suites; 66 prior tests still passed).
 - Phase 6 GREEN: 80/80 tests passed (`npm test`). `npm run lint` exited 0.
+- Phase 7 RED: not observed (traceability files already present from Phases 1–6).
+- Phase 7 GREEN: 86/86 tests passed (`npm test`). `npm run lint` exited 0. `npm run build` exited 0. Preview HTTP walk against local D1 succeeded.
 
 **Already true in the repo today:**
 
@@ -1033,5 +1059,6 @@ Populate with real incidents during implementation. Anticipated issues:
 - HTTP `POST /api/users/register`, `/login`, `/logout` (Phase 4). No JWT or session cookies.
 - Home (`/`) and register (`/register`) UI with hashed password on the wire (Phase 5).
 - Login (`/login`), empty `/mcq` stub, logout that clears `gq.*` `sessionStorage` keys (Phase 6).
+- Acceptance traceability tests and recorded lint/build/preview (Phase 7).
 
-**Not started:** Phase 7 traceability tests and recorded `lint` / `build` / `preview` walkthrough.
+**Gaps still true:** `/mcq` is not session-gated. AC-16 is unchecked because remote D1 migrate already happened in Phase 2. No browser UI click-through was recorded in Phase 7 (HTTP walk only).

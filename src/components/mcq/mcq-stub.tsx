@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 const DISPLAY_KEYS = ["gq.userid", "gq.username", "gq.firstName", "gq.lastName"] as const;
 
@@ -13,16 +13,35 @@ function clearDisplaySession() {
 	}
 }
 
+function subscribeNoop() {
+	return () => {};
+}
+
+function getClientFirstName() {
+	return sessionStorage.getItem("gq.firstName");
+}
+
+function getServerFirstName() {
+	return null;
+}
+
+function getIsClient() {
+	return true;
+}
+
+function getIsServer() {
+	return false;
+}
+
 export function McqStub() {
 	const router = useRouter();
-	const [firstName, setFirstName] = useState<string | null>(null);
-	const [sessionChecked, setSessionChecked] = useState(false);
+	const isClient = useSyncExternalStore(subscribeNoop, getIsClient, getIsServer);
+	const firstName = useSyncExternalStore(
+		subscribeNoop,
+		getClientFirstName,
+		getServerFirstName,
+	);
 	const [pending, setPending] = useState(false);
-
-	useEffect(() => {
-		setFirstName(sessionStorage.getItem("gq.firstName"));
-		setSessionChecked(true);
-	}, []);
 
 	async function onLogout() {
 		setPending(true);
@@ -40,9 +59,9 @@ export function McqStub() {
 			<h1 className="text-3xl font-semibold text-foreground">
 				Create multiple-choice questions
 			</h1>
-			{sessionChecked && firstName ? (
+			{isClient && firstName ? (
 				<p className="text-muted-foreground">Hello, {firstName}.</p>
-			) : sessionChecked ? (
+			) : isClient ? (
 				<p className="text-muted-foreground">
 					You are not signed in.{" "}
 					<Link href="/login" className="text-primary underline-offset-4 hover:underline">

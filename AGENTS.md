@@ -20,9 +20,11 @@ the user reviews and explicitly asks.
 - **shadcn/ui** on Base UI, `base-nova` style, with Lucide icons
 - **TypeScript** in strict mode
 - **Wrangler** for Cloudflare configuration, secrets, and deployment
+- **Vitest** (jsdom + Testing Library) — `npm test`
+- **Cloudflare D1** — binding `DB`, database `quizmaker-db`
+- **zod** for user-service and API body validation
 
-No database, authentication, testing framework, or AI SDK is installed yet. Do not
-write code that imports one without adding it first and telling the user.
+Teacher register, login, and logout exist and land on an empty `/mcq` stub. There is no server session, JWT, or AI SDK. Ask before adding a new dependency.
 
 ## Layout
 
@@ -46,6 +48,7 @@ Import through the `@/` alias, which maps to `src/`.
 | `npm run preview` | Build and run on the local **Workers** runtime |
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
+| `npm test` | Vitest unit and UI tests |
 | `npm run deploy` | Build and deploy to Cloudflare |
 | `npm run cf-typegen` | Regenerate `cloudflare-env.d.ts` after changing bindings |
 
