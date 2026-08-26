@@ -496,7 +496,7 @@ Use an in-memory fake store behind the mocked `db` so create → get is observab
 
 ---
 
-### Phase 4: Register, login, and logout HTTP endpoints - PLANNED
+### Phase 4: Register, login, and logout HTTP endpoints - COMPLETED
 
 **Objective:** Drive route handlers from failing HTTP-contract tests. Mock the **user service**, not D1.
 
@@ -530,6 +530,12 @@ Use an in-memory fake store behind the mocked `db` so create → get is observab
 | 4.15 | logout does not require a session token | no 401; no `Set-Cookie` for an auth cookie |
 
 **RED expected:** route files missing (`POST` import fails) or handlers throw `not implemented`.
+
+**RED result (2026-08-26):** `npm test` failed as intended. Register, login, and logout `route.test.ts` files failed to resolve `./route`. Phases 1–3 stayed green (36 passed). Test Files 3 failed | 4 passed.
+
+**GREEN result (2026-08-26):** After the three `POST` handlers: `Test Files 7 passed (7)`, `Tests 51 passed (51)` (15 Phase 4 cases + 36 prior). No session cookie or JWT. `npm run lint` exited 0.
+
+**AC proved (HTTP):** AC-01 (201), AC-03 (409), AC-06 (200), AC-07 (401), AC-09 (logout 200), AC-11 (no password in JSON), AC-12 (400), AC-15 (no Set-Cookie).
 
 #### GREEN tasks (only after RED)
 
@@ -993,9 +999,26 @@ Populate with real incidents during implementation. Anticipated issues:
 ## Current Status
 
 **Last Updated:** 2026-08-26
-**Current Phase:** Phase 3 - User service (create, read, update, delete)
-**Status:** COMPLETED (waiting for review before Phase 4)
-**Next Steps:** Human review of Phase 3. After confirmation, implement **Phase 4 only** when explicitly asked (register/login/logout HTTP tests RED, then routes GREEN).
+**Current Phase:** Phase 4 - Register, login, and logout HTTP endpoints
+**Status:** COMPLETED (waiting for review before Phase 5)
+**Next Steps:** Human review of Phase 4. After confirmation, implement **Phase 5 only** when explicitly asked (registration UI tests RED, then forms GREEN).
+
+**TDD log:**
+- Phase 1 RED/GREEN: password helpers (11 tests).
+- Phase 2 RED/GREEN: schema + `getDb` (9 tests). Local and remote `0001_create_users.sql` applied.
+- Phase 3 RED/GREEN: user service CRUD (16 tests). 36/36 after Phase 3.
+- Phase 4 RED: missing `./route` for register/login/logout (3 failed suites; 36 prior tests still passed).
+- Phase 4 GREEN: 51/51 tests passed (`npm test`).
+
+**Already true in the repo today:**
+
+- Vitest harness and password helpers (Phase 1).
+- D1 `users` table local and remote (Phase 2).
+- User service CRUD + `verifyCredentials` (Phase 3).
+- HTTP `POST /api/users/register`, `/login`, `/logout` (Phase 4). No JWT or session cookies.
+- Home page is still the default Next.js starter.
+
+**Not started:** register/login/MCQ UI, Phases 5–7 Test Plan files.
 
 **TDD log:**
 - Phase 1 RED/GREEN: password helpers (11 tests).
