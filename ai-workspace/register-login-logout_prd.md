@@ -441,7 +441,7 @@ Server re-validates username, names, and that `password` is a 64-character lower
 
 ---
 
-### Phase 3: User service (create, read, update, delete) - PLANNED
+### Phase 3: User service (create, read, update, delete) - COMPLETED
 
 **Objective:** Drive the user service from failing tests with a mocked D1 module. No UI and no HTTP yet.
 
@@ -476,6 +476,12 @@ Use an in-memory fake store behind the mocked `db` so create → get is observab
 | 3.16 | queries use numbered placeholders | inspect `prepare` SQL passed to the mock: statements contain `?1` and do not concatenate username/password into SQL |
 
 **RED expected:** service missing or methods throw `not implemented`.
+
+**RED result (2026-08-26):** `npm test` failed as intended. `src/lib/services/user-service.test.ts` did not load: `Failed to resolve import "@/lib/services/user-service"`. Phases 1–2 stayed green (20 passed). Test Files 1 failed | 3 passed.
+
+**GREEN result (2026-08-26):** After `src/lib/services/user-service.ts` and `zod`: `Test Files 4 passed (4)`, `Tests 36 passed (36)` (16 Phase 3 cases + 20 prior). Duplicate username maps to `UsernameConflictError`. `deleteUser` is a no-op when the id is missing. `updateUser` returns `null` when the id is missing. `npm run lint` exited 0.
+
+**AC proved (service layer):** AC-01, AC-02, AC-03, AC-05, AC-06, AC-07, AC-10, AC-11 via tests 3.1–3.16. HTTP/UI cases remain for later phases.
 
 #### GREEN tasks (only after RED)
 
@@ -760,7 +766,7 @@ The binding process is **TDD Process (mandatory)** plus each phase’s numbered 
 
 ### Important Notes
 
-- **Ask before adding a dependency.** Planned asks: Vitest stack (Phase 1), `zod` (Phase 3). Hashing uses Web Crypto — no extra package unless review changes that.
+- **Ask before adding a dependency.** Added: Vitest stack (Phase 1), `zod` (Phase 3). Hashing uses Web Crypto — no extra package unless review changes that.
 - **TDD:** production code for a phase comes after that phase’s RED `npm test` run is recorded in this PRD.
 - **Do not deploy. Do not migrate remote D1.**
 - **Do not edit** `cloudflare-env.d.ts`, `next-env.d.ts`, or `package-lock.json` by hand.
@@ -847,7 +853,7 @@ These are directional for a first sprint without analytics instrumentation. Meas
 ### Internal Dependencies (to be added when a phase is approved)
 
 - **Vitest stack** — Installed in Phase 1: `vitest`, `@vitejs/plugin-react@^4.7.0`, `@testing-library/react`, `@testing-library/user-event`, `jsdom`, `vite-tsconfig-paths`. Scripts: `test`, `test:watch`.
-- **zod** — Phase 3/4 request validation. Not installed today. Ask before `npm install`.
+- **zod** — Installed in Phase 3 (`zod` ^4) for user service input schemas.
 - **shadcn/ui** (already in repo) — `button`, `card`, `field`, `input`, `label`.
 - **`src/lib/utils.ts` `cn()`** — Class merging for UI.
 
@@ -987,21 +993,22 @@ Populate with real incidents during implementation. Anticipated issues:
 ## Current Status
 
 **Last Updated:** 2026-08-26
-**Current Phase:** Phase 2 - D1 database and users migration
-**Status:** COMPLETED (waiting for review before Phase 3)
-**Next Steps:** Human review of Phase 2. After confirmation, implement **Phase 3 only** when explicitly asked (user service tests RED, then CRUD GREEN).
+**Current Phase:** Phase 3 - User service (create, read, update, delete)
+**Status:** COMPLETED (waiting for review before Phase 4)
+**Next Steps:** Human review of Phase 3. After confirmation, implement **Phase 4 only** when explicitly asked (register/login/logout HTTP tests RED, then routes GREEN).
 
 **TDD log:**
 - Phase 1 RED/GREEN: password helpers (11 tests).
-- Phase 2 RED: missing `@/lib/db` and `@/lib/users-schema` (2 failed suites; 11 password tests still passed).
-- Phase 2 GREEN: 20/20 tests passed. Local migration `0001_create_users.sql` applied. No `--remote`.
+- Phase 2 RED/GREEN: schema + `getDb` (9 tests). Local migration applied. Real D1 created; remote schema not migrated.
+- Phase 3 RED: missing `@/lib/services/user-service` (1 failed suite; 20 prior tests still passed).
+- Phase 3 GREEN: 36/36 tests passed (`npm test`).
 
 **Already true in the repo today:**
 
 - Vitest harness and password helpers (Phase 1).
 - `USERS_TABLE_SQL`, `getDb()`, D1 binding `DB`, local `users` migration (Phase 2).
 - Real D1 database `quizmaker-db` (`b5346f05-82dc-4fc3-9c46-382efdc665e4`); local migration applied. Remote schema not migrated.
-- No auth UI, no Zod, no user service.
+- User service CRUD + `verifyCredentials` with Zod, mocked D1 in tests (Phase 3).
 - Home page is still the default Next.js starter.
 
-**Not started:** user service, API routes, register/login/MCQ UI, Phases 3–7 Test Plan files.
+**Not started:** API routes, register/login/MCQ UI, Phases 4–7 Test Plan files.

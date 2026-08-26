@@ -25,4 +25,4 @@ The first implementation phase is the Vitest harness and failing password tests,
 
 ## Current sprint
 
-**Register / login / logout** — see the live PRD. Phases 1–2 are **COMPLETED** (awaiting review of Phase 2). Phases 3–7 are **PLANNED**. Do not start the next phase until the user confirms.
+**Register / login / logout** — see the live PRD. Phases 1–3 are **COMPLETED** (awaiting review of Phase 3). Phases 4–7 are **PLANNED**. Do not start the next phase until the user confirms.
