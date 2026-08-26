@@ -548,7 +548,7 @@ Use an in-memory fake store behind the mocked `db` so create → get is observab
 
 ---
 
-### Phase 5: Registration UI - PLANNED
+### Phase 5: Registration UI - COMPLETED
 
 **Objective:** Drive home and register UI from failing Testing Library tests. Production pages stay thin; behavior lives in client components.
 
@@ -586,6 +586,12 @@ Thin pages: `src/app/page.tsx`, `src/app/register/page.tsx`
 | 5.15 | has a link to log in | link to `/login` |
 
 **RED expected:** components missing; tests fail to find roles or `fetch` never hashed.
+
+**RED result (2026-08-26):** `npm test` failed as intended. Missing `@/components/home/home-links` and `@/components/register/register-form`. Phases 1–4 stayed green (51 passed). Test Files 2 failed | 7 passed.
+
+**GREEN result (2026-08-26):** After HomeLinks + RegisterForm: `Test Files 9 passed (9)`, `Tests 66 passed (66)` (15 Phase 5 cases + 51 prior). `npm run lint` exited 0.
+
+**AC proved:** AC-04 (hashed wire password on register submit), AC-12 client validation (5.5–5.8). HTTP 409/400 messages shown in the form (5.13–5.14).
 
 #### GREEN tasks (only after RED)
 
@@ -999,9 +1005,28 @@ Populate with real incidents during implementation. Anticipated issues:
 ## Current Status
 
 **Last Updated:** 2026-08-26
-**Current Phase:** Phase 4 - Register, login, and logout HTTP endpoints
-**Status:** COMPLETED (waiting for review before Phase 5)
-**Next Steps:** Human review of Phase 4. After confirmation, implement **Phase 5 only** when explicitly asked (registration UI tests RED, then forms GREEN).
+**Current Phase:** Phase 5 - Registration UI
+**Status:** COMPLETED (waiting for review before Phase 6)
+**Next Steps:** Human review of Phase 5. After confirmation, implement **Phase 6 only** when explicitly asked (login, logout, MCQ stub).
+
+**TDD log:**
+- Phase 1 RED/GREEN: password helpers (11 tests).
+- Phase 2 RED/GREEN: schema + `getDb` (9 tests). Local and remote `0001_create_users.sql` applied.
+- Phase 3 RED/GREEN: user service CRUD (16 tests).
+- Phase 4 RED/GREEN: register/login/logout HTTP (15 tests). 51/51 after Phase 4.
+- Phase 5 RED: missing home-links and register-form modules (2 failed suites; 51 prior tests still passed).
+- Phase 5 GREEN: 66/66 tests passed (`npm test`).
+
+**Already true in the repo today:**
+
+- Vitest harness and password helpers (Phase 1).
+- D1 `users` table local and remote (Phase 2).
+- User service CRUD + `verifyCredentials` (Phase 3).
+- HTTP `POST /api/users/register`, `/login`, `/logout` (Phase 4).
+- Home (`/`) and register (`/register`) UI with hashed password on the wire (Phase 5).
+- Login and MCQ stub pages are not built yet.
+
+**Not started:** login/MCQ UI, Phase 6–7 Test Plan files.
 
 **TDD log:**
 - Phase 1 RED/GREEN: password helpers (11 tests).
