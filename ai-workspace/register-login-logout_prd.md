@@ -125,7 +125,7 @@ Server Components cannot be rendered by Testing Library. Interactive pages (`/`,
 
 ### Database Schema
 
-Cloudflare D1 is bound as `DB` in `wrangler.jsonc`. The `users` table migration is applied **locally** only. Remote `wrangler d1 create` still needs a Cloudflare token on a logged-in machine so the placeholder `database_id` can be replaced. Never apply migrations with `--remote`.
+Cloudflare D1 is bound as `DB` in `wrangler.jsonc` (`quizmaker-db`, id `b5346f05-82dc-4fc3-9c46-382efdc665e4`). The `users` table migration is applied **locally** only. Never apply migrations with `--remote`.
 
 **Proposed database name:** `quizmaker-db`
 **Binding:** `DB`
@@ -406,7 +406,7 @@ Server re-validates username, names, and that `password` is a 64-character lower
 
 **AC proved:** Column contract for AC-02 (`userid` PK) and AC-05 (`password` + `password_salt`) via tests 2.1–2.7. `getDb` contract via 2.8–2.9. AC-16: no remote migration was run.
 
-**Implementation notes:** `npx wrangler d1 create quizmaker-db` could not run here (no `CLOUDFLARE_API_TOKEN` in this non-interactive environment). `wrangler.jsonc` uses placeholder `database_id` `00000000-0000-4000-8000-000000000001` for **local** D1 only. Replace that id after running `wrangler d1 create quizmaker-db` on a logged-in machine. Never `migrations apply --remote`.
+**Implementation notes:** Remote D1 `quizmaker-db` was created (region APAC, id `b5346f05-82dc-4fc3-9c46-382efdc665e4`) and bound as `DB`. Binding name stays `DB` (not Wrangler’s suggested `quizmaker_db`). Migrations were applied **locally only**. Never `migrations apply --remote`.
 
 #### Test Plan (write first → RED)
 
@@ -1000,7 +1000,7 @@ Populate with real incidents during implementation. Anticipated issues:
 
 - Vitest harness and password helpers (Phase 1).
 - `USERS_TABLE_SQL`, `getDb()`, D1 binding `DB`, local `users` migration (Phase 2).
-- Placeholder D1 `database_id` until `wrangler d1 create quizmaker-db` is run with Cloudflare credentials.
+- Real D1 database `quizmaker-db` (`b5346f05-82dc-4fc3-9c46-382efdc665e4`); local migration applied. Remote schema not migrated.
 - No auth UI, no Zod, no user service.
 - Home page is still the default Next.js starter.
 

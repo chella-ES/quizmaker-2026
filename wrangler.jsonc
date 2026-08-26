@@ -19,14 +19,13 @@
 		"enabled": true
 	},
 	/**
-	 * D1: run `npx wrangler d1 create quizmaker-db` locally and replace database_id
-	 * with the returned UUID. Never apply migrations with --remote.
+	 * D1 binding DB. Migrations are applied locally only — never with --remote.
 	 */
 	"d1_databases": [
 		{
 			"binding": "DB",
 			"database_name": "quizmaker-db",
-			"database_id": "00000000-0000-4000-8000-000000000001",
+			"database_id": "b5346f05-82dc-4fc3-9c46-382efdc665e4",
 			"migrations_dir": "migrations"
 		}
 	]
