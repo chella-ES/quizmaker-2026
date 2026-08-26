@@ -25,15 +25,15 @@ describe("McqStub", () => {
 		expect(screen.queryByRole("button", { name: /save/i })).toBeNull();
 	});
 
-	it("mcq stub greets the teacher first name from sessionStorage", () => {
+	it("mcq stub greets the teacher first name from sessionStorage", async () => {
 		sessionStorage.setItem("gq.firstName", "Ada");
 		render(<McqStub />);
-		expect(screen.getByText(/ada/i)).toBeTruthy();
+		expect(await screen.findByText(/ada/i)).toBeTruthy();
 	});
 
-	it("mcq stub shows a signed-out hint when sessionStorage is empty", () => {
+	it("mcq stub shows a signed-out hint when sessionStorage is empty", async () => {
 		render(<McqStub />);
-		expect(screen.getByText(/not signed in/i)).toBeTruthy();
+		expect(await screen.findByText(/not signed in/i)).toBeTruthy();
 		expect(screen.getByRole("link", { name: /log in/i })).toHaveProperty(
 			"href",
 			expect.stringMatching(/\/login$/),
