@@ -5,15 +5,12 @@ agent conversation, so it describes only what is stable and true of the project.
 
 ## Project
 
-<!--
-Replace this section during Sprint 1 with a short description of what you are building:
-the problem, the primary user, and the current state. Two or three sentences.
-Keep it current. An out-of-date description here misleads every future conversation.
--->
-
-This is an unmodified AISprints starter. No application features have been built yet.
-The technical PRD in `ai-workspace/` is the source of truth for what is being built and
-for the current phase of work.
+The Greenfield Quizmaker is a web app for teachers to build and collaborate on a
+shared multiple-choice question (MCQ) test bank. This sprint covers teacher
+registration, username/password login, and logout, landing on an empty MCQ stub.
+The source of truth is `ai-workspace/register-login-logout_prd.md`. Implement
+one phase at a time, test-driven with Vitest (RED then GREEN), and only after
+the user reviews and explicitly asks.
 
 ## Stack
 
