@@ -125,7 +125,7 @@ Server Components cannot be rendered by Testing Library. Interactive pages (`/`,
 
 ### Database Schema
 
-Cloudflare D1 is bound as `DB` in `wrangler.jsonc` (`quizmaker-db`, id `b5346f05-82dc-4fc3-9c46-382efdc665e4`). The `users` table migration is applied **locally** only. Never apply migrations with `--remote`.
+Cloudflare D1 is bound as `DB` in `wrangler.jsonc` (`quizmaker-db`, id `b5346f05-82dc-4fc3-9c46-382efdc665e4`). The `users` table migration is applied locally and, as of 2026-08-26, on remote D1 after an explicit user request (`wrangler d1 migrations apply quizmaker-db --remote`).
 
 **Proposed database name:** `quizmaker-db`
 **Binding:** `DB`
@@ -404,9 +404,9 @@ Server re-validates username, names, and that `password` is a 64-character lower
 
 **GREEN result (2026-08-26):** After schema, `getDb`, and `migrations/0001_create_users.sql`: `Test Files 3 passed (3)`, `Tests 20 passed (20)`. Local apply: `npx wrangler d1 migrations apply quizmaker-db --local` applied `0001_create_users.sql` (not `--remote`). `npm run cf-typegen` added `DB: D1Database`. `npm run lint` exited 0.
 
-**AC proved:** Column contract for AC-02 (`userid` PK) and AC-05 (`password` + `password_salt`) via tests 2.1–2.7. `getDb` contract via 2.8–2.9. AC-16: no remote migration was run.
+**AC proved:** Column contract for AC-02 (`userid` PK) and AC-05 (`password` + `password_salt`) via tests 2.1–2.7. `getDb` contract via 2.8–2.9. AC-16 originally meant “do not migrate remote unprompted”; remote apply was done later on 2026-08-26 at the user’s request.
 
-**Implementation notes:** Remote D1 `quizmaker-db` was created (region APAC, id `b5346f05-82dc-4fc3-9c46-382efdc665e4`) and bound as `DB`. Binding name stays `DB` (not Wrangler’s suggested `quizmaker_db`). Migrations were applied **locally only**. Never `migrations apply --remote`.
+**Implementation notes:** Remote D1 `quizmaker-db` was created (region APAC, id `b5346f05-82dc-4fc3-9c46-382efdc665e4`) and bound as `DB`. Binding name stays `DB` (not Wrangler’s suggested `quizmaker_db`). `0001_create_users.sql` was applied locally, then applied remotely on 2026-08-26 at the user’s request.
 
 #### Test Plan (write first → RED)
 
@@ -999,7 +999,7 @@ Populate with real incidents during implementation. Anticipated issues:
 
 **TDD log:**
 - Phase 1 RED/GREEN: password helpers (11 tests).
-- Phase 2 RED/GREEN: schema + `getDb` (9 tests). Local migration applied. Real D1 created; remote schema not migrated.
+- Phase 2 RED/GREEN: schema + `getDb` (9 tests). Local migration applied. Real D1 created; remote `0001_create_users.sql` applied 2026-08-26 at user request.
 - Phase 3 RED: missing `@/lib/services/user-service` (1 failed suite; 20 prior tests still passed).
 - Phase 3 GREEN: 36/36 tests passed (`npm test`).
 
@@ -1007,7 +1007,7 @@ Populate with real incidents during implementation. Anticipated issues:
 
 - Vitest harness and password helpers (Phase 1).
 - `USERS_TABLE_SQL`, `getDb()`, D1 binding `DB`, local `users` migration (Phase 2).
-- Real D1 database `quizmaker-db` (`b5346f05-82dc-4fc3-9c46-382efdc665e4`); local migration applied. Remote schema not migrated.
+- Real D1 database `quizmaker-db` (`b5346f05-82dc-4fc3-9c46-382efdc665e4`); `0001_create_users.sql` applied locally and remotely (remote apply requested 2026-08-26).
 - User service CRUD + `verifyCredentials` with Zod, mocked D1 in tests (Phase 3).
 - Home page is still the default Next.js starter.
 
