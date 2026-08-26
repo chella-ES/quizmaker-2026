@@ -125,7 +125,7 @@ Server Components cannot be rendered by Testing Library. Interactive pages (`/`,
 
 ### Database Schema
 
-Cloudflare D1 (SQLite) is **not configured yet**. Implementation (after Phase 2 review) must create a D1 database, bind it as `DB` in `wrangler.jsonc`, run `npm run cf-typegen`, and apply migrations **locally only**.
+Cloudflare D1 is bound as `DB` in `wrangler.jsonc`. The `users` table migration is applied **locally** only. Remote `wrangler d1 create` still needs a Cloudflare token on a logged-in machine so the placeholder `database_id` can be replaced. Never apply migrations with `--remote`.
 
 **Proposed database name:** `quizmaker-db`
 **Binding:** `DB`
@@ -392,13 +392,21 @@ Server re-validates username, names, and that `password` is a 64-character lower
 
 ---
 
-### Phase 2: D1 database and users migration - PLANNED
+### Phase 2: D1 database and users migration - COMPLETED
 
 **Objective:** Make the `users` schema and D1 access module fail tests first, then satisfy the contract. Wrangler create/apply is the local follow-through after GREEN — it is not a substitute for the tests.
 
 **Framework:** Vitest. No real D1 in unit tests. Mock `@opennextjs/cloudflare`.
 
 **Acceptance criteria this phase must turn green:** AC-02 column contract (`userid` PK), AC-05 column contract (`password` + `password_salt` present, not a plaintext column purpose). AC-16 (no remote migrate) is a process check, not a unit test.
+
+**RED result (2026-08-26):** `npm test` failed as intended. `src/lib/db.test.ts` and `src/lib/users-schema.test.ts` did not load: `Failed to resolve import "@/lib/db"` and `Failed to resolve import "@/lib/users-schema"`. Phase 1 stayed green (11 passed). Test Files 2 failed | 1 passed.
+
+**GREEN result (2026-08-26):** After schema, `getDb`, and `migrations/0001_create_users.sql`: `Test Files 3 passed (3)`, `Tests 20 passed (20)`. Local apply: `npx wrangler d1 migrations apply quizmaker-db --local` applied `0001_create_users.sql` (not `--remote`). `npm run cf-typegen` added `DB: D1Database`. `npm run lint` exited 0.
+
+**AC proved:** Column contract for AC-02 (`userid` PK) and AC-05 (`password` + `password_salt`) via tests 2.1–2.7. `getDb` contract via 2.8–2.9. AC-16: no remote migration was run.
+
+**Implementation notes:** `npx wrangler d1 create quizmaker-db` could not run here (no `CLOUDFLARE_API_TOKEN` in this non-interactive environment). `wrangler.jsonc` uses placeholder `database_id` `00000000-0000-4000-8000-000000000001` for **local** D1 only. Replace that id after running `wrangler d1 create quizmaker-db` on a logged-in machine. Never `migrations apply --remote`.
 
 #### Test Plan (write first → RED)
 
@@ -979,20 +987,21 @@ Populate with real incidents during implementation. Anticipated issues:
 ## Current Status
 
 **Last Updated:** 2026-08-26
-**Current Phase:** Phase 1 - Test harness and password hashing
-**Status:** COMPLETED (waiting for review before Phase 2)
-**Next Steps:** Human review of Phase 1. After confirmation, implement **Phase 2 only** when explicitly asked (D1 schema tests RED, then migration/db module GREEN).
+**Current Phase:** Phase 2 - D1 database and users migration
+**Status:** COMPLETED (waiting for review before Phase 3)
+**Next Steps:** Human review of Phase 2. After confirmation, implement **Phase 3 only** when explicitly asked (user service tests RED, then CRUD GREEN).
 
 **TDD log:**
-- RED: `Failed to resolve import "@/lib/password"` (1 failed suite, 0 tests executed).
-- GREEN: 11/11 password tests passed (`npm test`).
+- Phase 1 RED/GREEN: password helpers (11 tests).
+- Phase 2 RED: missing `@/lib/db` and `@/lib/users-schema` (2 failed suites; 11 password tests still passed).
+- Phase 2 GREEN: 20/20 tests passed. Local migration `0001_create_users.sql` applied. No `--remote`.
 
 **Already true in the repo today:**
 
-- Vitest harness (`vitest.config.ts`, `npm test`).
-- Password helpers: SHA-256 wire hash, per-user salt, PBKDF2 storage hash, timing-safe compare (`src/lib/password.ts`).
-- Next.js 16 App Router starter on Cloudflare Workers; no D1 binding, no auth, no Zod.
-- shadcn/ui components available for forms.
+- Vitest harness and password helpers (Phase 1).
+- `USERS_TABLE_SQL`, `getDb()`, D1 binding `DB`, local `users` migration (Phase 2).
+- Placeholder D1 `database_id` until `wrangler d1 create quizmaker-db` is run with Cloudflare credentials.
+- No auth UI, no Zod, no user service.
 - Home page is still the default Next.js starter.
 
-**Not started:** `users` migration, user service, API routes, register/login/MCQ UI, Phases 2–7 Test Plan files.
+**Not started:** user service, API routes, register/login/MCQ UI, Phases 3–7 Test Plan files.
