@@ -70,6 +70,12 @@ describe("McqForm", () => {
 		expect(screen.getByRole("button", { name: /cancel/i })).toBeTruthy();
 	});
 
+	it("create form labels the correct-choice radios", () => {
+		render(<McqForm mode="create" />);
+		expect(screen.getAllByText(/click for correct choice/i).length).toBeGreaterThan(0);
+		expect(screen.getByRole("radio", { name: /choice 1 is correct/i })).toBeTruthy();
+	});
+
 	it("Cancel navigates to /mcq without posting", async () => {
 		const user = userEvent.setup();
 		render(<McqForm mode="create" />);

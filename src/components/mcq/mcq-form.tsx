@@ -257,7 +257,7 @@ export function McqForm({ mode, qid }: McqFormProps) {
 	}
 
 	return (
-		<Card className="mx-auto w-full max-w-2xl">
+		<Card className="mx-auto w-full max-w-3xl">
 			<CardHeader>
 				<CardTitle>{mode === "edit" ? "Edit question" : "Create question"}</CardTitle>
 				<CardDescription>
@@ -306,29 +306,37 @@ export function McqForm({ mode, qid }: McqFormProps) {
 									key={choice.key}
 									data-invalid={Boolean(choiceError) || undefined}
 								>
-									<FieldLabel htmlFor={choiceId}>Choice {index + 1}</FieldLabel>
-									<div className="flex flex-wrap items-center gap-2">
-										<Input
-											id={choiceId}
-											value={choice.text}
-											onChange={(event) => {
-												const next = [...choices];
-												next[index] = { ...choice, text: event.target.value };
-												setChoices(next);
-											}}
-										/>
-										<RadioGroupItem
-											value={choice.key}
-											aria-label={`Choice ${index + 1} is correct`}
-										/>
+									<div className="flex items-end gap-3">
+										<div className="min-w-0 flex-1">
+											<FieldLabel htmlFor={choiceId}>Choice {index + 1}</FieldLabel>
+											<Input
+												id={choiceId}
+												value={choice.text}
+												onChange={(event) => {
+													const next = [...choices];
+													next[index] = { ...choice, text: event.target.value };
+													setChoices(next);
+												}}
+											/>
+										</div>
 										<Button
 											type="button"
 											variant="outline"
+											className="ml-auto w-auto shrink-0"
 											onClick={() => removeChoice(choice.key)}
 											disabled={choices.length <= 2}
 										>
 											Remove choice
 										</Button>
+									</div>
+									<div className="flex items-center justify-start gap-2">
+										<span className="text-xs font-medium text-muted-foreground">
+											click for correct choice
+										</span>
+										<RadioGroupItem
+											value={choice.key}
+											aria-label={`Choice ${index + 1} is correct`}
+										/>
 									</div>
 									<FieldError
 										errors={choiceError ? [{ message: choiceError }] : undefined}
