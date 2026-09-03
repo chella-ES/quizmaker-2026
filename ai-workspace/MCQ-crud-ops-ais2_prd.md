@@ -547,7 +547,7 @@ Server re-validates the same rules with Zod.
 
 ---
 
-### Phase 3: MCQ HTTP endpoints - PLANNED
+### Phase 3: MCQ HTTP endpoints - COMPLETED
 
 **Objective:** Drive route handlers from failing HTTP-contract tests. Mock the **MCQ service**, not D1.
 
@@ -555,9 +555,11 @@ Server re-validates the same rules with Zod.
 
 **Acceptance criteria this phase must turn green:** AC-01 (201 create), AC-05 (200 update), AC-06 (200 delete), AC-07 (201 attempt), AC-08 (400), AC-09 (404), AC-11 (200 list).
 
-**RED result:** _(record when implementing)_
+**RED result (2026-09-03):** `npm test` failed as intended. List/create, `[qid]`, and attempts `route.test.ts` files failed to resolve `./route`. Test Files 3 failed | 14 passed (17). Tests 117 passed (117).
 
-**GREEN result:** _(record when implementing)_
+**GREEN result (2026-09-03):** After the three route handlers: `Test Files 17 passed (17)`, `Tests 133 passed (133)` (16 Phase 3 cases + 117 prior). No session cookie. `npm run lint` exited 0.
+
+**AC proved (HTTP):** AC-01 (201), AC-05 (200 update), AC-06 (200 delete), AC-07 (201 attempt), AC-08 (400), AC-09 (404), AC-11 (200 list). Test 3.16: no `Set-Cookie`. UI cases remain; AC checkboxes stay unchecked until then.
 
 #### Test Plan (write first → RED)
 
@@ -1083,15 +1085,17 @@ Populate with real incidents during implementation. Anticipated issues:
 ## Current Status
 
 **Last Updated:** 2026-09-03
-**Current Phase:** Phase 2 - MCQ service (questions, choices, attempts)
+**Current Phase:** Phase 3 - MCQ HTTP endpoints
 **Status:** COMPLETED (waiting for review)
-**Next Steps:** Human review of Phase 2. Do not start Phase 3 until the user explicitly asks.
+**Next Steps:** Human review of Phase 3. Do not start Phase 4 until the user explicitly asks.
 
 **TDD log:**
 - Phase 1 RED: missing `@/lib/mcq-schema` (1 failed suite; 86 prior tests still passed).
 - Phase 1 GREEN: 98/98 tests passed (`npm test`). `npm run lint` exited 0. Local `0002_create_mcq_tables.sql` applied. No `--remote`. No deploy.
 - Phase 2 RED: missing `@/lib/services/mcq-service` (1 failed suite; 98 prior tests still passed).
 - Phase 2 GREEN: 117/117 tests passed (`npm test`). `npm run lint` exited 0.
+- Phase 3 RED: missing MCQ `route` modules (3 failed suites; 117 prior tests still passed).
+- Phase 3 GREEN: 133/133 tests passed (`npm test`). `npm run lint` exited 0.
 
 **Already true in the repo today:**
 
@@ -1102,8 +1106,9 @@ Populate with real incidents during implementation. Anticipated issues:
 - shadcn `table`, `button`, `dialog`, `field`, `input` available.
 - D1 `questions`, `choices`, and `attempts` schema contract + local migration (Phase 1).
 - MCQ service create, get, list, update, delete, and recordAttempt (Phase 2).
+- HTTP `GET`/`POST /api/mcq`, `GET`/`PUT`/`DELETE /api/mcq/[qid]`, `POST /api/mcq/[qid]/attempts` (Phase 3). No JWT or session cookies.
 
 **Gaps this sprint will close (after approved phases):**
 
-- No `/api/mcq` routes.
+- `/mcq` has no list, create, edit, preview, or delete.
 - `/mcq` has no list, create, edit, preview, or delete.
