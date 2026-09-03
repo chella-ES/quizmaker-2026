@@ -1,0 +1,43 @@
+---
+description: Test-driven, review-gated phased implementation and technical PRD template
+alwaysApply: true
+---
+
+# Feature work: PRD, TDD, and review-gated phases
+
+Every feature follows this process. Do not skip steps or combine phases.
+
+## Technical PRDs
+
+- Create every PRD from `ai-workspace/TEMPLATE_TECHNICAL_PRD.md`. Copy the full
+  template; do not invent a different structure or omit sections.
+- Save PRDs under `ai-workspace/` with a descriptive filename ending in `_prd.md`.
+- The PRD is the source of truth for scope, phases, and acceptance criteria. Do not
+  implement behavior that is out of scope or not in the current phase.
+
+## Phased implementation
+
+- Implement **one phase at a time**. After finishing a phase, stop.
+- Do not start a phase until the user has reviewed the plan (or the previous phase)
+  and **explicitly asked** to proceed.
+- Do not implement later phases, extra polish, or adjacent features while waiting.
+
+## Test-driven development
+
+- Use Vitest (`npm test`). For each unit of work: write a failing test first (RED),
+  then the minimum production code to pass (GREEN). Do not write production code
+  before a failing test exists for that behavior.
+- Prefer adding or extending tests in the same change as the implementation they
+  cover. A phase is not done until its tests pass.
+
+## Examples
+
+```
+# ❌ BAD — implement several phases, or code before tests and review
+Implement all CRUD routes, then add tests, then write the PRD.
+
+# ✅ GOOD — PRD from the template, then one approved phase, RED then GREEN
+1. Draft the PRD from TEMPLATE_TECHNICAL_PRD.md and wait for review.
+2. After approval, write failing tests for Phase 1 only.
+3. Implement Phase 1 until those tests pass, then stop for review.
+```
