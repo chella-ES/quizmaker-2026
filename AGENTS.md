@@ -5,15 +5,12 @@ agent conversation, so it describes only what is stable and true of the project.
 
 ## Project
 
-<!--
-Replace this section during Sprint 1 with a short description of what you are building:
-the problem, the primary user, and the current state. Two or three sentences.
-Keep it current. An out-of-date description here misleads every future conversation.
--->
-
-This is an unmodified AISprints starter. No application features have been built yet.
-The technical PRD in `ai-workspace/` is the source of truth for what is being built and
-for the current phase of work.
+The Greenfield Quizmaker is a web app for teachers to build and collaborate on a
+shared multiple-choice question (MCQ) test bank. This sprint covers teacher
+registration, username/password login, and logout, landing on an empty MCQ stub.
+The source of truth is `ai-workspace/register-login-logout_prd.md`. Implement
+one phase at a time, test-driven with Vitest (RED then GREEN), and only after
+the user reviews and explicitly asks.
 
 ## Stack
 
@@ -23,9 +20,11 @@ for the current phase of work.
 - **shadcn/ui** on Base UI, `base-nova` style, with Lucide icons
 - **TypeScript** in strict mode
 - **Wrangler** for Cloudflare configuration, secrets, and deployment
+- **Vitest** (jsdom + Testing Library) — `npm test`
+- **Cloudflare D1** — binding `DB`, database `quizmaker-db`
+- **zod** for user-service and API body validation
 
-No database, authentication, testing framework, or AI SDK is installed yet. Do not
-write code that imports one without adding it first and telling the user.
+Teacher register, login, and logout exist and land on an empty `/mcq` stub. There is no server session, JWT, or AI SDK. Ask before adding a new dependency.
 
 ## Layout
 
@@ -49,6 +48,7 @@ Import through the `@/` alias, which maps to `src/`.
 | `npm run preview` | Build and run on the local **Workers** runtime |
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
+| `npm test` | Vitest unit and UI tests |
 | `npm run deploy` | Build and deploy to Cloudflare |
 | `npm run cf-typegen` | Regenerate `cloudflare-env.d.ts` after changing bindings |
 
