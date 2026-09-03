@@ -373,9 +373,9 @@ No other public MCQ HTTP endpoints in this sprint. `listAttempts` may exist on t
 
 ### User Interface Requirements
 
-Use shadcn/ui. Already in the repo: `button`, `card`, `dialog`, `field`, `input`, `label`, `separator`, `table`, `badge`.
+Use shadcn/ui. Already in the repo: `button`, `card`, `dialog`, `dropdown-menu`, `field`, `input`, `label`, `radio-group`, `separator`, `table`, `badge`, `textarea`.
 
-**Ask before adding** (Phase 4/5/6, only if still missing): `@shadcn/dropdown-menu`, `@shadcn/textarea`, `@shadcn/radio-group`. Always `npx shadcn@latest add @shadcn/<name>`. Do not hand-edit generated files under `src/components/ui/` except to compose from them.
+**Ask before adding** (Phase 6, only if still missing): none for this form. Preview may reuse `radio-group`. Always `npx shadcn@latest add @shadcn/<name>`. Do not hand-edit generated files under `src/components/ui/` except to compose from them.
 
 Shared chrome on `/mcq`, `/mcq/new`, `/mcq/[qid]/edit`, and `/mcq/[qid]/preview`: product context, teacher greeting or signed-out hint, **Log out** (same `sessionStorage` + `POST /api/users/logout` behavior as today).
 
@@ -650,7 +650,7 @@ Server re-validates the same rules with Zod.
 
 ---
 
-### Phase 5: Create and edit UI - PLANNED
+### Phase 5: Create and edit UI - COMPLETED
 
 **Objective:** Drive the authoring page from failing UI tests: two default choices, add/remove up to six, Save and Cancel.
 
@@ -658,9 +658,11 @@ Server re-validates the same rules with Zod.
 
 **Acceptance criteria this phase must turn green:** AC-01 (create Save POSTs valid body), AC-05 (edit Save PUTs), AC-08 (client validation), AC-14 (Cancel returns to `/mcq` without fetch).
 
-**RED result:** _(record when implementing)_
+**RED result (2026-09-03):** `npm test -- src/components/mcq/mcq-form.test.tsx` failed as intended. Failed to resolve import `@/components/mcq/mcq-form`. Test Files 1 failed (1). Tests no tests.
 
-**GREEN result:** _(record when implementing)_
+**GREEN result (2026-09-03):** After adding `@shadcn/textarea` and `@shadcn/radio-group` and implementing `mcq-form.tsx` plus thin `/mcq/new` and `/mcq/[qid]/edit` pages: `Test Files 18 passed (18)`, `Tests 159 passed (159)`. `npm run lint` exited 0. `npm run build` compiled and type-checked.
+
+**AC proved (UI form):** AC-01 (create POST body), AC-05 (edit GET + PUT), AC-08 (client validation + 400 details), and Cancel without POST (mapped as AC-12 in the AC table). Preview/attempt UI remains for Phase 6; AC checkboxes stay unchecked until then.
 
 #### Test Plan (write first → RED)
 
@@ -939,9 +941,9 @@ These are directional for a sprint without analytics instrumentation. Measure ma
 ### Internal Dependencies
 
 - **Existing identity sprint** — `/login` → `/mcq`, `sessionStorage` `gq.*` keys, `POST /api/users/logout`, `src/lib/db.ts`, Zod, Vitest.
-- **shadcn/ui (already in repo)** — `button`, `card`, `dialog`, `field`, `input`, `label`, `separator`, `table`, `badge`.
+- **shadcn/ui (already in repo)** — `button`, `card`, `dialog`, `dropdown-menu`, `field`, `input`, `label`, `radio-group`, `separator`, `table`, `badge`, `textarea`.
 - **Lucide** — `EllipsisVertical` (or equivalent) for the row menu trigger.
-- **Proposed shadcn adds (ask first, Phase 4–6):** `dropdown-menu`, `textarea`, `radio-group`.
+- **Proposed shadcn adds (ask first, Phase 6):** none expected beyond what preview already has.
 
 ### Environment and bindings
 
@@ -1037,6 +1039,13 @@ Populate with real incidents during implementation. Anticipated issues:
 **Solution:** Ignore `isCorrect` in the pre-submit preview render. Use only the attempt response for feedback.
 **Code Reference:** `src/components/mcq/mcq-preview.tsx`
 
+### Choice textbox query also matches the correct-answer radio
+
+**Problem:** `getByLabelText(/choice 1/i)` finds both the choice input and the radio labelled “Choice 1 is correct”.
+**Cause:** The radio accessible name contains the same substring as the field label.
+**Solution:** Query the textbox with `/^choice 1$/i` (or `getByRole("textbox")`) and the radio with `/choice 1 is correct/i`.
+**Code Reference:** `src/components/mcq/mcq-form.test.tsx`
+
 ### Identity stub tests fail after the list ships
 
 **Problem:** `mcq-stub.test.tsx` fails looking for no textbox / no Save.
@@ -1087,9 +1096,9 @@ Populate with real incidents during implementation. Anticipated issues:
 ## Current Status
 
 **Last Updated:** 2026-09-03
-**Current Phase:** Phase 4 - MCQ list UI (table, create, actions menu, delete)
+**Current Phase:** Phase 5 - Create and edit UI
 **Status:** COMPLETED (waiting for review)
-**Next Steps:** Human review of Phase 4. Do not start Phase 5 until the user explicitly asks.
+**Next Steps:** Human review of Phase 5. Do not start Phase 6 until the user explicitly asks.
 
 **TDD log:**
 - Phase 1 RED: missing `@/lib/mcq-schema` (1 failed suite; 86 prior tests still passed).
@@ -1100,19 +1109,21 @@ Populate with real incidents during implementation. Anticipated issues:
 - Phase 3 GREEN: 133/133 tests passed (`npm test`). `npm run lint` exited 0.
 - Phase 4 RED: list Create/table/actions missing (11 failed tests; heading/logout still green).
 - Phase 4 GREEN: 145/145 tests passed (`npm test`). `npm run lint` exited 0.
+- Phase 5 RED: missing `@/components/mcq/mcq-form` (1 failed suite; no tests collected).
+- Phase 5 GREEN: 159/159 tests passed (`npm test`). `npm run lint` exited 0. `npm run build` compiled and type-checked.
 
 **Already true in the repo today:**
 
 - Teacher register, login, logout.
 - `/mcq` list table with greeting, signed-out hint, logout, Create, ellipsis actions, and delete confirm (Phase 4).
+- `/mcq/new` create and `/mcq/[qid]/edit` authoring form with 2–6 choices, Save, and Cancel (Phase 5).
 - D1 `users` table and user service.
 - Vitest harness with a green identity-sprint suite.
-- shadcn `table`, `button`, `dialog`, `dropdown-menu`, `field`, `input` available.
+- shadcn `table`, `button`, `dialog`, `dropdown-menu`, `field`, `input`, `textarea`, `radio-group` available.
 - D1 `questions`, `choices`, and `attempts` schema contract + local migration (Phase 1).
 - MCQ service create, get, list, update, delete, and recordAttempt (Phase 2).
 - HTTP `GET`/`POST /api/mcq`, `GET`/`PUT`/`DELETE /api/mcq/[qid]`, `POST /api/mcq/[qid]/attempts` (Phase 3). No JWT or session cookies.
 
 **Gaps this sprint will close (after approved phases):**
 
-- `/mcq/new` and `/mcq/[qid]/edit` authoring pages are not built yet.
 - Preview and attempt UI is not built yet.
