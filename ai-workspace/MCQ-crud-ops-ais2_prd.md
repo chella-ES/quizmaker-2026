@@ -491,7 +491,7 @@ Server re-validates the same rules with Zod.
 
 ---
 
-### Phase 2: MCQ service (questions, choices, attempts) - PLANNED
+### Phase 2: MCQ service (questions, choices, attempts) - COMPLETED
 
 **Objective:** Drive create, read, update, delete, and attempt from failing tests with a mocked D1 module. No HTTP and no UI.
 
@@ -499,9 +499,11 @@ Server re-validates the same rules with Zod.
 
 **Acceptance criteria this phase must turn green:** AC-01 (create persists name, stem, 2–6 choices, one correct), AC-05 (update replaces fields and choices), AC-06 (delete removes question, choices, attempts), AC-07 (attempt snapshots correctness), AC-08 (validation errors are typed), AC-11 (list returns all questions).
 
-**RED result:** _(record when implementing)_
+**RED result (2026-09-03):** `npm test` failed as intended. `src/lib/services/mcq-service.test.ts` did not load: `Failed to resolve import "@/lib/services/mcq-service" from "src/lib/services/mcq-service.test.ts". Does the file exist?` — Test Files 1 failed | 13 passed (14). Tests 98 passed (98).
 
-**GREEN result:** _(record when implementing)_
+**GREEN result (2026-09-03):** After `src/lib/services/mcq-service.ts`: `Test Files 14 passed (14)`, `Tests 117 passed (117)` (19 Phase 2 cases + 98 prior). `npm run lint` exited 0.
+
+**AC proved (service layer):** AC-01, AC-05, AC-06, AC-07, AC-08, AC-11 via tests 2.1–2.19. HTTP/UI cases remain; checkboxes stay unchecked until then.
 
 #### Test Plan (write first → RED)
 
@@ -1081,13 +1083,15 @@ Populate with real incidents during implementation. Anticipated issues:
 ## Current Status
 
 **Last Updated:** 2026-09-03
-**Current Phase:** Phase 1 - D1 schema for questions, choices, and attempts
+**Current Phase:** Phase 2 - MCQ service (questions, choices, attempts)
 **Status:** COMPLETED (waiting for review)
-**Next Steps:** Human review of Phase 1. Do not start Phase 2 until the user explicitly asks.
+**Next Steps:** Human review of Phase 2. Do not start Phase 3 until the user explicitly asks.
 
 **TDD log:**
 - Phase 1 RED: missing `@/lib/mcq-schema` (1 failed suite; 86 prior tests still passed).
 - Phase 1 GREEN: 98/98 tests passed (`npm test`). `npm run lint` exited 0. Local `0002_create_mcq_tables.sql` applied. No `--remote`. No deploy.
+- Phase 2 RED: missing `@/lib/services/mcq-service` (1 failed suite; 98 prior tests still passed).
+- Phase 2 GREEN: 117/117 tests passed (`npm test`). `npm run lint` exited 0.
 
 **Already true in the repo today:**
 
@@ -1097,8 +1101,9 @@ Populate with real incidents during implementation. Anticipated issues:
 - Vitest harness with a green identity-sprint suite.
 - shadcn `table`, `button`, `dialog`, `field`, `input` available.
 - D1 `questions`, `choices`, and `attempts` schema contract + local migration (Phase 1).
+- MCQ service create, get, list, update, delete, and recordAttempt (Phase 2).
 
 **Gaps this sprint will close (after approved phases):**
 
-- No MCQ service or `/api/mcq` routes.
+- No `/api/mcq` routes.
 - `/mcq` has no list, create, edit, preview, or delete.
