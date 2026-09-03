@@ -14,15 +14,14 @@ Planning documents for **The Greenfield Quizmaker**. This folder is the source o
 
 Preferred framework: **Vitest** (Testing Library + jsdom for UI), as in `.cursor/skills/testing/SKILL.md`.
 
-The first implementation phase is the Vitest harness and failing password tests, not the UI.
-
 ## Documents
 
 | File | Purpose |
 |------|---------|
-| [register-login-logout_prd.md](./register-login-logout_prd.md) | **Live PRD** for this sprint: teacher register, login, logout, empty MCQ stub. |
+| [MCQ-crud-ops-ais2_prd.md](./MCQ-crud-ops-ais2_prd.md) | **Live PRD** for this sprint: MCQ list, create, edit, preview, delete, and attempt. |
+| [register-login-logout_prd.md](./register-login-logout_prd.md) | Prior sprint: teacher register, login, logout, empty MCQ stub. Complete; keep its tests green. |
 | [TEMPLATE_TECHNICAL_PRD.md](./TEMPLATE_TECHNICAL_PRD.md) | Blank PRD template. Do not fill this in; copy the structure into a new feature file. |
 
 ## Current sprint
 
-**Register / login / logout** — see the live PRD. Phases 1–5 are **COMPLETED** (awaiting review of Phase 5). Phases 6–7 are **PLANNED**. Do not start the next phase until the user confirms.
+**MCQ create / update / delete / attempt** — see the live PRD. The PRD is **WAITING FOR REVIEW**. Do not start Phase 1 until the user confirms and explicitly asks to implement it.
