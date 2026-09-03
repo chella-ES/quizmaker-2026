@@ -600,7 +600,7 @@ Server re-validates the same rules with Zod.
 
 ---
 
-### Phase 4: MCQ list UI (table, create, actions menu, delete) - PLANNED
+### Phase 4: MCQ list UI (table, create, actions menu, delete) - COMPLETED
 
 **Objective:** Drive the `/mcq` list from failing Testing Library tests. Keep logout and greeting. No create form on this page.
 
@@ -608,9 +608,11 @@ Server re-validates the same rules with Zod.
 
 **Acceptance criteria this phase must turn green:** AC-10 (table columns + empty state), AC-12 (Create navigates to `/mcq/new`), AC-13 (ellipsis actions), AC-06 (delete confirm + DELETE + list refresh). Prior stub ACs for greeting/logout remain green.
 
-**RED result:** _(record when implementing)_
+**RED result (2026-09-03):** `npm test` failed as intended. Create, empty state, table, and row-action cases were missing from `McqStub`. Test Files 1 failed | 16 passed (17). Tests 11 failed | 134 passed (145). Heading, no-editor, greeting, and logout cases stayed green.
 
-**GREEN result:** _(record when implementing)_
+**GREEN result (2026-09-03):** After evolving `mcq-stub.tsx` into the list (shadcn `Table`, `dropdown-menu`, `Dialog`): `Test Files 17 passed (17)`, `Tests 145 passed (145)`. Added `@shadcn/dropdown-menu` as `src/components/ui/dropdown-menu.tsx`. `npm run lint` exited 0.
+
+**AC proved (UI list):** AC-10, AC-12, AC-13, and AC-06 (confirm + DELETE + refresh) via tests 4.1–4.14. Create/edit/preview pages remain for later phases; AC checkboxes stay unchecked until then.
 
 #### Test Plan (write first → RED)
 
@@ -1085,9 +1087,9 @@ Populate with real incidents during implementation. Anticipated issues:
 ## Current Status
 
 **Last Updated:** 2026-09-03
-**Current Phase:** Phase 3 - MCQ HTTP endpoints
+**Current Phase:** Phase 4 - MCQ list UI (table, create, actions menu, delete)
 **Status:** COMPLETED (waiting for review)
-**Next Steps:** Human review of Phase 3. Do not start Phase 4 until the user explicitly asks.
+**Next Steps:** Human review of Phase 4. Do not start Phase 5 until the user explicitly asks.
 
 **TDD log:**
 - Phase 1 RED: missing `@/lib/mcq-schema` (1 failed suite; 86 prior tests still passed).
@@ -1096,19 +1098,21 @@ Populate with real incidents during implementation. Anticipated issues:
 - Phase 2 GREEN: 117/117 tests passed (`npm test`). `npm run lint` exited 0.
 - Phase 3 RED: missing MCQ `route` modules (3 failed suites; 117 prior tests still passed).
 - Phase 3 GREEN: 133/133 tests passed (`npm test`). `npm run lint` exited 0.
+- Phase 4 RED: list Create/table/actions missing (11 failed tests; heading/logout still green).
+- Phase 4 GREEN: 145/145 tests passed (`npm test`). `npm run lint` exited 0.
 
 **Already true in the repo today:**
 
 - Teacher register, login, logout.
-- Empty `/mcq` stub with greeting, signed-out hint, and logout.
+- `/mcq` list table with greeting, signed-out hint, logout, Create, ellipsis actions, and delete confirm (Phase 4).
 - D1 `users` table and user service.
 - Vitest harness with a green identity-sprint suite.
-- shadcn `table`, `button`, `dialog`, `field`, `input` available.
+- shadcn `table`, `button`, `dialog`, `dropdown-menu`, `field`, `input` available.
 - D1 `questions`, `choices`, and `attempts` schema contract + local migration (Phase 1).
 - MCQ service create, get, list, update, delete, and recordAttempt (Phase 2).
 - HTTP `GET`/`POST /api/mcq`, `GET`/`PUT`/`DELETE /api/mcq/[qid]`, `POST /api/mcq/[qid]/attempts` (Phase 3). No JWT or session cookies.
 
 **Gaps this sprint will close (after approved phases):**
 
-- `/mcq` has no list, create, edit, preview, or delete.
-- `/mcq` has no list, create, edit, preview, or delete.
+- `/mcq/new` and `/mcq/[qid]/edit` authoring pages are not built yet.
+- Preview and attempt UI is not built yet.
