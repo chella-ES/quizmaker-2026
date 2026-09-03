@@ -747,15 +747,21 @@ Thin page: `src/app/mcq/[qid]/preview/page.tsx`
 
 ---
 
-### Phase 7: Acceptance-criteria confirmation and Workers-aware check - PLANNED
+### Phase 7: Acceptance-criteria confirmation and Workers-aware check - COMPLETED
 
 **Objective:** Confirm every in-scope AC is proven by a green test (or an explicit process check), then lint/build/preview. No new product features.
 
 **Framework:** Vitest full suite. Add traceability assertions for this sprint’s test files.
 
-**RED result:** _(record when implementing)_
+**RED result (2026-09-03):** Not observed as a failing suite. 7.7–7.12 assert that Phase 1–6 MCQ test files exist; those files were already present from earlier phases, so the first run of the new cases was GREEN. The assertions fail if a listed file is missing or empty.
 
-**GREEN result:** _(record when implementing)_
+**GREEN result (2026-09-03):**
+- `npm test`: `Test Files 19 passed (19)`, `Tests 174 passed (174)` (6 new Phase 7 cases + 168 prior).
+- `npm run lint`: exited 0.
+- `npm run build`: exited 0. Next.js 16.2.12 compiled; `/mcq` and `/mcq/new` prerendered (`○`); `/mcq/[qid]/edit` and `/mcq/[qid]/preview` on-demand (`ƒ`).
+- `npm run preview`: already running at `http://127.0.0.1:8787` with local D1 `quizmaker-db` (binding `DB`). A second preview in this session failed with `EPERM` deleting `.open-next` because that process held the directory. HTTP GET walk: `/`, `/register`, `/login`, `/mcq`, `/mcq/new`, `/mcq/{qid}/edit`, `/mcq/{qid}/preview`, `GET /api/mcq` → 200, no `Set-Cookie`. Wrangler request log from the live preview also recorded `POST /api/mcq` 201, `PUT /api/mcq/{qid}` 200, `POST /api/mcq/{qid}/attempts` 201, `POST /api/users/login` 200, `POST /api/users/logout` 200. Delete against live D1 was not re-run in this session (covered by tests 4.10–4.13). `npm run deploy` was not run. No `--remote` migration.
+
+**AC proved:** AC-01 through AC-16 by mapped tests plus this command log. `/mcq` is still not session-gated (Cut).
 
 #### Test Plan (write first → RED)
 
@@ -898,22 +904,22 @@ Tick an item only when the mapped tests are GREEN (or the process check is recor
 | AC-15 | Preview does not reveal the correct choice until after attempt submit. | 6.2 |
 | AC-16 | No remote D1 migration and no deploy unless the user asks. | Phase 1/7 process log |
 
-- [ ] AC-01
-- [ ] AC-02
-- [ ] AC-03
-- [ ] AC-04
-- [ ] AC-05
-- [ ] AC-06
-- [ ] AC-07
-- [ ] AC-08
-- [ ] AC-09
-- [ ] AC-10
-- [ ] AC-11
-- [ ] AC-12
-- [ ] AC-13
-- [ ] AC-14
-- [ ] AC-15
-- [ ] AC-16
+- [x] AC-01
+- [x] AC-02
+- [x] AC-03
+- [x] AC-04
+- [x] AC-05
+- [x] AC-06
+- [x] AC-07
+- [x] AC-08
+- [x] AC-09
+- [x] AC-10
+- [x] AC-11
+- [x] AC-12
+- [x] AC-13
+- [x] AC-14
+- [x] AC-15
+- [x] AC-16
 
 ---
 
@@ -1048,6 +1054,20 @@ Populate with real incidents during implementation. Anticipated issues:
 **Solution:** Query the textbox with `/^choice 1$/i` (or `getByRole("textbox")`) and the radio with `/choice 1 is correct/i`.
 **Code Reference:** `src/components/mcq/mcq-form.test.tsx`
 
+### `npx` blocked by PowerShell execution policy
+
+**Problem:** `npx wrangler …` fails with `npx.ps1 cannot be loaded because running scripts is disabled`.
+**Cause:** PowerShell will not run the `npx.ps1` shim.
+**Solution:** Use `npx.cmd wrangler …`, `npm.cmd run preview`, or `node .\node_modules\wrangler\bin\wrangler.js …`. Optional current-session only: `Set-ExecutionPolicy -Scope Process Bypass`.
+**Code Reference:** Windows PowerShell execution policy
+
+### Preview fails with EPERM deleting `.open-next`
+
+**Problem:** `npm run preview` throws `EPERM, Permission denied` on `.open-next`.
+**Cause:** Another OpenNext/Wrangler preview already holds that directory (common if preview is already running on port 8787).
+**Solution:** Use the existing preview at `http://127.0.0.1:8787`, or stop that process (`x` in the Wrangler menu) and retry. Do not delete `.open-next` while it is in use.
+**Code Reference:** `npm run preview`
+
 ### Identity stub tests fail after the list ships
 
 **Problem:** `mcq-stub.test.tsx` fails looking for no textbox / no Save.
@@ -1098,9 +1118,9 @@ Populate with real incidents during implementation. Anticipated issues:
 ## Current Status
 
 **Last Updated:** 2026-09-03
-**Current Phase:** Phase 6 - Preview and attempt UI
-**Status:** COMPLETED (waiting for review)
-**Next Steps:** Human review of Phase 6. Do not start Phase 7 until the user explicitly asks.
+**Current Phase:** Phase 7 - Acceptance-criteria confirmation and Workers-aware check
+**Status:** COMPLETED
+**Next Steps:** Sprint complete. Do not deploy or apply remote D1 migrations unless the user asks.
 
 **TDD log:**
 - Phase 1 RED: missing `@/lib/mcq-schema` (1 failed suite; 86 prior tests still passed).
@@ -1115,6 +1135,8 @@ Populate with real incidents during implementation. Anticipated issues:
 - Phase 5 GREEN: 159/159 tests passed (`npm test`). `npm run lint` exited 0. `npm run build` compiled and type-checked.
 - Phase 6 RED: missing `@/components/mcq/mcq-preview` (1 failed suite; no tests collected).
 - Phase 6 GREEN: 168/168 tests passed (`npm test`). `npm run lint` exited 0. `npm run build` compiled and type-checked.
+- Phase 7 RED: not observed (7.7–7.12 files already present).
+- Phase 7 GREEN: 174/174 tests passed (`npm test`). `npm run lint` exited 0. `npm run build` exited 0. Local preview at `http://127.0.0.1:8787`. No `--remote`. No deploy.
 
 **Already true in the repo today:**
 
@@ -1122,6 +1144,7 @@ Populate with real incidents during implementation. Anticipated issues:
 - `/mcq` list table with greeting, signed-out hint, logout, Create, ellipsis actions, and delete confirm (Phase 4).
 - `/mcq/new` create and `/mcq/[qid]/edit` authoring form with 2–6 choices, Save, and Cancel (Phase 5).
 - `/mcq/[qid]/preview` shows stem and choices, hides correctness until submit, and records an attempt (Phase 6).
+- Phase 7 traceability tests 7.7–7.12; AC-01–AC-16 ticked from mapped tests and recorded commands.
 - D1 `users` table and user service.
 - Vitest harness with a green identity-sprint suite.
 - shadcn `table`, `button`, `dialog`, `dropdown-menu`, `field`, `input`, `textarea`, `radio-group` available.
@@ -1131,4 +1154,4 @@ Populate with real incidents during implementation. Anticipated issues:
 
 **Gaps this sprint will close (after approved phases):**
 
-- Phase 7 acceptance-criteria confirmation, lint/build/preview walkthrough, and AC checkboxes.
+- None remaining in this PRD. `/mcq` is still not session-gated (Cut).
