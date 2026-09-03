@@ -702,7 +702,7 @@ Thin pages: `src/app/mcq/new/page.tsx`, `src/app/mcq/[qid]/edit/page.tsx`
 
 ---
 
-### Phase 6: Preview and attempt UI - PLANNED
+### Phase 6: Preview and attempt UI - COMPLETED
 
 **Objective:** Drive preview from failing tests: show stem and choices, hide correctness until submit, record an attempt.
 
@@ -710,9 +710,11 @@ Thin pages: `src/app/mcq/new/page.tsx`, `src/app/mcq/[qid]/edit/page.tsx`
 
 **Acceptance criteria this phase must turn green:** AC-07 (attempt POST + correct/incorrect feedback), AC-15 (preview does not reveal the correct choice before submit).
 
-**RED result:** _(record when implementing)_
+**RED result (2026-09-03):** `npm test -- src/components/mcq/mcq-preview.test.tsx` failed as intended. Failed to resolve import `@/components/mcq/mcq-preview`. Test Files 1 failed (1). Tests no tests.
 
-**GREEN result:** _(record when implementing)_
+**GREEN result (2026-09-03):** After implementing `mcq-preview.tsx` and thin `/mcq/[qid]/preview` page (reused `radio-group`, no new shadcn add): `Test Files 19 passed (19)`, `Tests 168 passed (168)`. `npm run lint` exited 0. `npm run build` compiled and type-checked.
+
+**AC proved (UI preview):** AC-07 (attempt POST + correct/incorrect feedback) and AC-15 (no correctness leak before submit) via tests 6.1–6.9. AC checkboxes stay unchecked until Phase 7.
 
 #### Test Plan (write first → RED)
 
@@ -1096,9 +1098,9 @@ Populate with real incidents during implementation. Anticipated issues:
 ## Current Status
 
 **Last Updated:** 2026-09-03
-**Current Phase:** Phase 5 - Create and edit UI
+**Current Phase:** Phase 6 - Preview and attempt UI
 **Status:** COMPLETED (waiting for review)
-**Next Steps:** Human review of Phase 5. Do not start Phase 6 until the user explicitly asks.
+**Next Steps:** Human review of Phase 6. Do not start Phase 7 until the user explicitly asks.
 
 **TDD log:**
 - Phase 1 RED: missing `@/lib/mcq-schema` (1 failed suite; 86 prior tests still passed).
@@ -1111,12 +1113,15 @@ Populate with real incidents during implementation. Anticipated issues:
 - Phase 4 GREEN: 145/145 tests passed (`npm test`). `npm run lint` exited 0.
 - Phase 5 RED: missing `@/components/mcq/mcq-form` (1 failed suite; no tests collected).
 - Phase 5 GREEN: 159/159 tests passed (`npm test`). `npm run lint` exited 0. `npm run build` compiled and type-checked.
+- Phase 6 RED: missing `@/components/mcq/mcq-preview` (1 failed suite; no tests collected).
+- Phase 6 GREEN: 168/168 tests passed (`npm test`). `npm run lint` exited 0. `npm run build` compiled and type-checked.
 
 **Already true in the repo today:**
 
 - Teacher register, login, logout.
 - `/mcq` list table with greeting, signed-out hint, logout, Create, ellipsis actions, and delete confirm (Phase 4).
 - `/mcq/new` create and `/mcq/[qid]/edit` authoring form with 2–6 choices, Save, and Cancel (Phase 5).
+- `/mcq/[qid]/preview` shows stem and choices, hides correctness until submit, and records an attempt (Phase 6).
 - D1 `users` table and user service.
 - Vitest harness with a green identity-sprint suite.
 - shadcn `table`, `button`, `dialog`, `dropdown-menu`, `field`, `input`, `textarea`, `radio-group` available.
@@ -1126,4 +1131,4 @@ Populate with real incidents during implementation. Anticipated issues:
 
 **Gaps this sprint will close (after approved phases):**
 
-- Preview and attempt UI is not built yet.
+- Phase 7 acceptance-criteria confirmation, lint/build/preview walkthrough, and AC checkboxes.
