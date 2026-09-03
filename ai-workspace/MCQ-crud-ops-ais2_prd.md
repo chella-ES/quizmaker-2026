@@ -443,7 +443,7 @@ Server re-validates the same rules with Zod.
 | GREEN result | Paste the passing `npm test` summary after production code |
 | AC proved | IDs from the Acceptance Criteria table that this phase turned green |
 
-### Phase 1: D1 schema for questions, choices, and attempts - PLANNED
+### Phase 1: D1 schema for questions, choices, and attempts - COMPLETED
 
 **Objective:** Lock the three-table SQL contract with failing tests, then add the schema module and a local-only migration. No service methods and no UI.
 
@@ -451,11 +451,11 @@ Server re-validates the same rules with Zod.
 
 **Acceptance criteria this phase must turn green:** AC-02 (`qid` TEXT PK), AC-03 (choices FK + position), AC-04 (attempts snapshot columns + `qid` FK). AC-16 is a process check (local migrate only).
 
-**RED result:** _(record when implementing)_
+**RED result (2026-09-03):** `npm test` failed as intended. `src/lib/mcq-schema.test.ts` did not load: `Failed to resolve import "@/lib/mcq-schema" from "src/lib/mcq-schema.test.ts". Does the file exist?` — Test Files 1 failed | 12 passed (13). Tests 86 passed (86). Vitest v4.1.11.
 
-**GREEN result:** _(record when implementing)_
+**GREEN result (2026-09-03):** After `src/lib/mcq-schema.ts` and `migrations/0002_create_mcq_tables.sql`: `Test Files 13 passed (13)`, `Tests 98 passed (98)` (12 Phase 1 cases + 86 prior). Local apply: `npx wrangler d1 migrations apply quizmaker-db --local` applied `0002_create_mcq_tables.sql` (not `--remote`). `npm run lint` exited 0.
 
-**AC proved:** _(record when implementing)_
+**AC proved:** Schema contract for AC-02 (`qid TEXT PRIMARY KEY`), AC-03 (choices FK, `choice_text` / `is_correct` / `position`), and AC-04 (attempts snapshot columns + `qid` FK CASCADE) via tests 1.1–1.12. Service/HTTP cases for those ACs remain; checkboxes stay unchecked until then. AC-16 process check: local migrate only; no deploy.
 
 #### Test Plan (write first → RED)
 
@@ -1081,11 +1081,13 @@ Populate with real incidents during implementation. Anticipated issues:
 ## Current Status
 
 **Last Updated:** 2026-09-03
-**Current Phase:** PRD draft (no implementation phase started)
-**Status:** WAITING FOR REVIEW
-**Next Steps:** Human review of this PRD. After approval, the user names **Phase 1** and explicitly asks to implement it (schema tests first). Do not write application code until then.
+**Current Phase:** Phase 1 - D1 schema for questions, choices, and attempts
+**Status:** COMPLETED (waiting for review)
+**Next Steps:** Human review of Phase 1. Do not start Phase 2 until the user explicitly asks.
 
-**TDD log:** none yet (documentation only).
+**TDD log:**
+- Phase 1 RED: missing `@/lib/mcq-schema` (1 failed suite; 86 prior tests still passed).
+- Phase 1 GREEN: 98/98 tests passed (`npm test`). `npm run lint` exited 0. Local `0002_create_mcq_tables.sql` applied. No `--remote`. No deploy.
 
 **Already true in the repo today:**
 
@@ -1094,9 +1096,9 @@ Populate with real incidents during implementation. Anticipated issues:
 - D1 `users` table and user service.
 - Vitest harness with a green identity-sprint suite.
 - shadcn `table`, `button`, `dialog`, `field`, `input` available.
+- D1 `questions`, `choices`, and `attempts` schema contract + local migration (Phase 1).
 
 **Gaps this sprint will close (after approved phases):**
 
-- No `questions` / `choices` / `attempts` tables.
 - No MCQ service or `/api/mcq` routes.
 - `/mcq` has no list, create, edit, preview, or delete.

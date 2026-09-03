@@ -24,4 +24,4 @@ Preferred framework: **Vitest** (Testing Library + jsdom for UI), as in `.cursor
 
 ## Current sprint
 
-**MCQ create / update / delete / attempt** — see the live PRD. The PRD is **WAITING FOR REVIEW**. Do not start Phase 1 until the user confirms and explicitly asks to implement it.
+**MCQ create / update / delete / attempt** — see the live PRD. Phase 1 is **COMPLETED** (awaiting review). Phase 2 is **PLANNED**. Do not start the next phase until the user confirms.
