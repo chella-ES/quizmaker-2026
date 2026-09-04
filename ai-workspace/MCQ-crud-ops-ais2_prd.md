@@ -1,20 +1,21 @@
 Date created: 2026-09-03
-Date last modified: 2026-09-03
+Date last modified: 2026-09-04
 
 # MCQ Create, Update, Delete, and Attempt - Technical PRD
 
 **Product:** The Greenfield Quizmaker
-**Sprint focus:** Expand the empty `/mcq` stub into a teacher MCQ bank: list, create, edit, preview, delete, and record an attempt
-**Implementation rule:** Documentation only until the user reviews a phase and explicitly asks to implement it. Do not start coding from this PRD unprompted.
+**Sprint focus:** Expand the empty `/mcq` stub into a teacher MCQ bank: list, create, edit, preview, delete, and record an attempt. **Shipped** 2026-09-04 to `https://quizmaker-2026-bat6.chellaganesh.workers.dev`.
+**Implementation rule:** All seven phases are implemented. Further product work still requires review of this PRD (or a named phase) and an explicit ask. Do not start coding from this PRD unprompted.
 **Delivery rule:** Every phase is **test-driven**. Write the phase test plan in Vitest first (RED), then the minimum production code until that plan is GREEN. A phase is not complete while its tests are red, skipped, or missing.
+**Ops rule:** Remote D1 apply and `npm run deploy` remain forbidden unless the user explicitly asks. Both were done on 2026-09-04 at that request (same `quizmaker-db`; see Post-sprint operations).
 
 ---
 
 ## Overview/Problem
 
-Teachers who sign in to The Greenfield Quizmaker currently land on an empty Multiple Choice Question (MCQ) stub. They can register, log in, and log out, but they cannot add a question, list existing questions, change wording or choices, preview how a question will look, or remove a question from the shared bank.
+Before this sprint, teachers who signed in to The Greenfield Quizmaker landed on an empty Multiple Choice Question (MCQ) stub. They could register, log in, and log out, but they could not add a question, list existing questions, change wording or choices, preview how a question will look, or remove a question from the shared bank.
 
-Without persistable questions and choices, later sprints have nothing to collaborate on, generate from, or assign. This sprint replaces the stub with a table of questions, a dedicated create/edit page, preview and delete actions, and a third table that records which choice a taker selected and whether it was correct.
+Without persistable questions and choices, later sprints had nothing to collaborate on, generate from, or assign. This sprint replaced the stub with a table of questions, a dedicated create/edit page, preview and delete actions, and a third table that records which choice a taker selected and whether it was correct. That bank is live on Cloudflare Workers as of 2026-09-04.
 
 ---
 
@@ -36,10 +37,10 @@ We believe that letting teachers create, edit, preview, delete, and attempt mult
 - Actions are behind a **three-dot vertical ellipsis** dropdown per row: **Edit**, **Preview**, **Delete**.
 - **Preview** (`/mcq/[qid]/preview`) shows the question stem and its choices as a taker would see them. The teacher may select a choice and submit an **attempt**.
 - **Delete** permanently removes the question, its choices, and its attempts after a confirmation dialog.
-- D1 tables: `questions`, `choices`, `attempts`, applied **locally** only.
+- D1 tables: `questions`, `choices`, `attempts`. Applied locally in Phase 1; applied **remotely** on the existing `quizmaker-db` on 2026-09-04 after the user asked (did not create a new database; did not re-apply `0001_create_users.sql`).
 - An MCQ **service** above D1 that owns all SQL. HTTP route handlers call the service; they do not run SQL inline.
 - HTTP endpoints for list, create, read, update, delete, and attempt.
-- Default **2** choice fields on the form, with controls to add up to **6** and to remove down to **2**. Exactly one choice is marked correct.
+- Default **2** choice fields on the form, with controls to add up to **6** and to remove down to **2**. Exactly one choice is marked correct. Shipped layout: choice textbox left, **Remove choice** right on the same row; **click for correct choice** plus radio under the textbox.
 - Keep existing register, login, logout, greeting, and signed-out hint behavior on `/mcq`.
 - **Test-driven development with Vitest for every phase:** failing tests first, then implementation until green. Previous phases must stay green.
 
@@ -133,10 +134,11 @@ The identity sprint’s suite (including `mcq-stub.test.tsx`) remains required. 
 
 ### Database Schema
 
-Cloudflare D1 remains bound as `DB` (`quizmaker-db`). The `users` table is unchanged. This sprint adds three tables in a new local migration.
+Cloudflare D1 remains bound as `DB` (`quizmaker-db`, id `b5346f05-82dc-4fc3-9c46-382efdc665e4`). The `users` table is unchanged. This sprint adds three tables in `migrations/0002_create_mcq_tables.sql`.
 
-**Proposed database name:** `quizmaker-db`
+**Database name:** `quizmaker-db`
 **Binding:** `DB`
+**Remote apply:** 2026-09-04, same database. `0001_create_users.sql` was already on remote from the identity sprint. `0002` is `CREATE TABLE` / indexes only and does not touch `users`. A later `wrangler d1 migrations list quizmaker-db --remote` reported no pending migrations.
 
 Column names use snake_case. Ids are UUID strings generated in the MCQ service (`crypto.randomUUID()`), not by SQLite `randomblob` in the table default, so tests can assert the service owns id creation.
 
@@ -394,11 +396,11 @@ Shared chrome on `/mcq`, `/mcq/new`, `/mcq/[qid]/edit`, and `/mcq/[qid]/preview`
 
 #### Create (`/mcq/new`) and Edit (`/mcq/[qid]/edit`)
 
-Shared client form component; create starts empty, edit loads `GET /api/mcq/[qid]`.
+Shared client form component (`McqForm`); create starts empty, edit loads `GET /api/mcq/[qid]`. Thin pages wrap the form in `main` with `max-w-3xl`.
 
 - **Name** — required, trim, 1–200 characters, `input`.
-- **Question** — required, trim, 1–5000 characters, textarea (or `input` if textarea is not approved).
-- **Choices** — default **2** rows on create. Each row: choice text (required, 1–500 characters) and a control to mark **exactly one** as the correct answer (radio group).
+- **Question** — required, trim, 1–5000 characters, `textarea`.
+- **Choices** — default **2** rows on create. Each row: choice textbox on the left (required, 1–500 characters); **Remove choice** right-aligned on the same row; under the textbox, left-aligned copy **click for correct choice** next to the radio. Exactly one radio in the group may be selected.
 - **Add choice** — enabled while count &lt; 6.
 - **Remove choice** — enabled while count &gt; 2. Removing the currently correct row requires the teacher to pick another correct choice before Save (client validation).
 - **Save** — client-validate → `POST /api/mcq` (create) or `PUT /api/mcq/[qid]` (edit) → on success `router.push("/mcq")`. Disable while pending.
@@ -662,6 +664,8 @@ Server re-validates the same rules with Zod.
 
 **GREEN result (2026-09-03):** After adding `@shadcn/textarea` and `@shadcn/radio-group` and implementing `mcq-form.tsx` plus thin `/mcq/new` and `/mcq/[qid]/edit` pages: `Test Files 18 passed (18)`, `Tests 159 passed (159)`. `npm run lint` exited 0. `npm run build` compiled and type-checked.
 
+**Layout follow-up (2026-09-03, commit `05bf92f`):** Choice textbox left, **Remove choice** right-aligned on the same row; **click for correct choice** plus radio left-aligned under the textbox. Create/edit pages `max-w-3xl`. Covered in `mcq-form.test.tsx` (visible copy + remove/add rules).
+
 **AC proved (UI form):** AC-01 (create POST body), AC-05 (edit GET + PUT), AC-08 (client validation + 400 details), and Cancel without POST (mapped as AC-12 in the AC table). Preview/attempt UI remains for Phase 6; AC checkboxes stay unchecked until then.
 
 #### Test Plan (write first → RED)
@@ -759,7 +763,7 @@ Thin page: `src/app/mcq/[qid]/preview/page.tsx`
 - `npm test`: `Test Files 19 passed (19)`, `Tests 174 passed (174)` (6 new Phase 7 cases + 168 prior).
 - `npm run lint`: exited 0.
 - `npm run build`: exited 0. Next.js 16.2.12 compiled; `/mcq` and `/mcq/new` prerendered (`○`); `/mcq/[qid]/edit` and `/mcq/[qid]/preview` on-demand (`ƒ`).
-- `npm run preview`: already running at `http://127.0.0.1:8787` with local D1 `quizmaker-db` (binding `DB`). A second preview in this session failed with `EPERM` deleting `.open-next` because that process held the directory. HTTP GET walk: `/`, `/register`, `/login`, `/mcq`, `/mcq/new`, `/mcq/{qid}/edit`, `/mcq/{qid}/preview`, `GET /api/mcq` → 200, no `Set-Cookie`. Wrangler request log from the live preview also recorded `POST /api/mcq` 201, `PUT /api/mcq/{qid}` 200, `POST /api/mcq/{qid}/attempts` 201, `POST /api/users/login` 200, `POST /api/users/logout` 200. Delete against live D1 was not re-run in this session (covered by tests 4.10–4.13). `npm run deploy` was not run. No `--remote` migration.
+- `npm run preview`: already running at `http://127.0.0.1:8787` with local D1 `quizmaker-db` (binding `DB`). A second preview in this session failed with `EPERM` deleting `.open-next` because that process held the directory. HTTP GET walk: `/`, `/register`, `/login`, `/mcq`, `/mcq/new`, `/mcq/{qid}/edit`, `/mcq/{qid}/preview`, `GET /api/mcq` → 200, no `Set-Cookie`. Wrangler request log from the live preview also recorded `POST /api/mcq` 201, `PUT /api/mcq/{qid}` 200, `POST /api/mcq/{qid}/attempts` 201, `POST /api/users/login` 200, `POST /api/users/logout` 200. Delete against live D1 was not re-run in this session (covered by tests 4.10–4.13). **During Phase 7:** `npm run deploy` was not run and no `--remote` migration. Remote apply + production deploy happened later on 2026-09-04 at user request (Post-sprint operations).
 
 **AC proved:** AC-01 through AC-16 by mapped tests plus this command log. `/mcq` is still not session-gated (Cut).
 
@@ -792,6 +796,30 @@ These tests prove TDD artifacts were not deleted. They do not replace 1.x–6.x 
 
 ---
 
+### Post-sprint operations (2026-09-04) - COMPLETED at user request
+
+**Objective:** Publish the implemented MCQ bank to Cloudflare on the **existing** D1 database, keep `users` data, and apply only newer migrations. Not a product phase; no new features.
+
+**Remote D1 (same database):**
+- Database: `quizmaker-db` (`b5346f05-82dc-4fc3-9c46-382efdc665e4`), binding `DB`.
+- Worker: `quizmaker-2026-bat6`.
+- `wrangler d1 migrations apply quizmaker-db --remote` applied **only** `0002_create_mcq_tables.sql` (`CREATE TABLE` for `questions` / `choices` / `attempts` plus indexes). `0001_create_users.sql` was already on remote. `users` was not dropped or rewritten.
+- Later `wrangler d1 migrations list quizmaker-db --remote`: **No migrations to apply.**
+
+**Deploy:**
+- First `npm run deploy` failed with `EPERM` deleting `.open-next` (local `npm run preview` / Wrangler on `:8787`, then `next dev` via `initOpenNextCloudflareForDev()` holding the folder).
+- Stopped those local processes. `cmd /c rmdir /s /q .open-next` succeeded after PowerShell `Rename-Item` was denied.
+- Retry `npm run deploy` (`opennextjs-cloudflare build && opennextjs-cloudflare deploy`) exited 0. Worker bound to `env.DB (quizmaker-db)`. Version ID `645e45c1-c28a-4174-a039-ca0e30a8e4d0`.
+
+**Live URL:** `https://quizmaker-2026-bat6.chellaganesh.workers.dev`  
+Homepage GET 200 confirmed after deploy. User reported a full manual walk on 2026-09-04: all good.
+
+**Source branch (pushed 2026-09-04):** `feature/mcq-crud-aisprint2` — https://github.com/chella-ES/quizmaker-2026/tree/feature/mcq-crud-aisprint2
+
+**AC-16:** Still satisfied. Remote migrate and deploy ran **only** after the user asked. Same database; no new D1 created.
+
+---
+
 ## Technical Implementation Details
 
 ### Documentation in `ai-workspace/`
@@ -816,9 +844,9 @@ Tests are listed before production files because TDD writes them first.
 - `src/app/api/mcq/[qid]/route.test.ts` / `route.ts` — Phase 3 get + update + delete
 - `src/app/api/mcq/[qid]/attempts/route.test.ts` / `route.ts` — Phase 3 attempt
 - `src/components/mcq/mcq-stub.test.tsx` / `mcq-stub.tsx` — Phase 4 list (evolved stub)
-- `src/components/mcq/mcq-form.test.tsx` / `mcq-form.tsx` — Phase 5
+- `src/components/mcq/mcq-form.test.tsx` / `mcq-form.tsx` — Phase 5 authoring form (choice row: text left, Remove right, correct-choice radio under the textbox)
 - `src/components/mcq/mcq-preview.test.tsx` / `mcq-preview.tsx` — Phase 6
-- `src/app/mcq/page.tsx`, `src/app/mcq/new/page.tsx`, `src/app/mcq/[qid]/edit/page.tsx`, `src/app/mcq/[qid]/preview/page.tsx` — thin routes
+- `src/app/mcq/page.tsx`, `src/app/mcq/new/page.tsx`, `src/app/mcq/[qid]/edit/page.tsx`, `src/app/mcq/[qid]/preview/page.tsx` — thin routes (create/edit `max-w-3xl`)
 - `src/lib/acceptance-traceability.test.ts` — extended in Phase 7
 - `src/lib/db.ts` — existing D1 access; do not import from `'use client'` files
 - `wrangler.jsonc` — existing `DB` binding; no new binding expected
@@ -864,17 +892,21 @@ Route handlers parse JSON, run Zod, call the service, and return JSON. Client co
 
 - **Ask before adding a dependency.** Likely shadcn copies only (`dropdown-menu`, `textarea`, `radio-group`). No new npm package unless review agrees.
 - **TDD:** production code for a phase comes after that phase’s RED `npm test` run is recorded in this PRD.
-- **Do not deploy. Do not migrate remote D1** unless the user asks.
+- **Do not deploy. Do not migrate remote D1** unless the user asks. On 2026-09-04 the user asked; `0002` was applied on existing `quizmaker-db` and `npm run deploy` published `quizmaker-2026-bat6`.
 - **Do not edit** `cloudflare-env.d.ts`, `next-env.d.ts`, or `package-lock.json` by hand.
 - D1 foreign keys may not run in mocked tests; the service still deletes children explicitly.
 - `/mcq` is still not session-gated. Preview attempt requires `gq.userid` only on the client.
 - List Description is the stem (`question`), not a separate column.
 - Updating a question replaces choices; old `choiceid` values are not guaranteed. Attempts keep snapshots.
 - Keep `McqStub` greeting/logout behavior so identity tests stay green.
+- Local `npm run preview` and `next dev` (`initOpenNextCloudflareForDev`) both lock `.open-next` on Windows; stop them before `npm run deploy`.
 
 ### Configuration details
 
 - D1 binding name: `DB`
+- Database: `quizmaker-db` (`b5346f05-82dc-4fc3-9c46-382efdc665e4`)
+- Worker name: `quizmaker-2026-bat6`
+- Production URL: `https://quizmaker-2026-bat6.chellaganesh.workers.dev`
 - `sessionStorage` keys (unchanged): `gq.userid`, `gq.username`, `gq.firstName`, `gq.lastName`
 - Choice count: min 2, max 6
 - List order: `created_at DESC`
@@ -902,7 +934,7 @@ Tick an item only when the mapped tests are GREEN (or the process check is recor
 | AC-13 | Row actions use a three-dot menu with Edit, Preview, and Delete. | 4.7–4.9 |
 | AC-14 | `npm test` is fully GREEN; `npm run lint` and `npm run build` pass (recorded). | Phase 7 commands + 7.7–7.12 |
 | AC-15 | Preview does not reveal the correct choice until after attempt submit. | 6.2 |
-| AC-16 | No remote D1 migration and no deploy unless the user asks. | Phase 1/7 process log |
+| AC-16 | No remote D1 migration and no deploy unless the user asks. | Phase 1/7 process log; 2026-09-04 ops log (user asked; same DB) |
 
 - [x] AC-01
 - [x] AC-02
@@ -943,8 +975,8 @@ These are directional for a sprint without analytics instrumentation. Measure ma
 
 ### External Dependencies
 
-- **Cloudflare D1** — Store `questions`, `choices`, `attempts`. Local migrations only.
-- **Cloudflare Workers / OpenNext** — Hosting runtime. `getCloudflareContext()` for `env.DB`.
+- **Cloudflare D1** — Store `questions`, `choices`, `attempts`. Local apply in Phase 1; remote apply of `0002` on existing `quizmaker-db` on 2026-09-04 at user request.
+- **Cloudflare Workers / OpenNext** — Hosting runtime. `getCloudflareContext()` for `env.DB`. Production Worker `quizmaker-2026-bat6`.
 
 ### Internal Dependencies
 
@@ -962,16 +994,26 @@ These are directional for a sprint without analytics instrumentation. Measure ma
 
 No new secrets in this sprint.
 
-### Proposed commands (run only during the matching approved phase)
+### Proposed commands
+
+Phase work (local):
 
 ```bash
-npx wrangler d1 migrations create quizmaker-db create-mcq-tables
 npx wrangler d1 migrations apply quizmaker-db --local
 npm test
 npm run lint
 npm run build
 npm run preview
 ```
+
+User-requested production (2026-09-04; do not repeat unless asked again):
+
+```bash
+npx wrangler d1 migrations apply quizmaker-db --remote
+npm run deploy
+```
+
+Do not create a second D1 database. Do not re-apply `0001_create_users.sql` if it is already on remote.
 
 ---
 
@@ -1061,12 +1103,12 @@ Populate with real incidents during implementation. Anticipated issues:
 **Solution:** Use `npx.cmd wrangler …`, `npm.cmd run preview`, or `node .\node_modules\wrangler\bin\wrangler.js …`. Optional current-session only: `Set-ExecutionPolicy -Scope Process Bypass`.
 **Code Reference:** Windows PowerShell execution policy
 
-### Preview fails with EPERM deleting `.open-next`
+### Preview or deploy fails with EPERM deleting `.open-next`
 
-**Problem:** `npm run preview` throws `EPERM, Permission denied` on `.open-next`.
-**Cause:** Another OpenNext/Wrangler preview already holds that directory (common if preview is already running on port 8787).
-**Solution:** Use the existing preview at `http://127.0.0.1:8787`, or stop that process (`x` in the Wrangler menu) and retry. Do not delete `.open-next` while it is in use.
-**Code Reference:** `npm run preview`
+**Problem:** `npm run preview` or `npm run deploy` throws `EPERM, Permission denied` on `.open-next`.
+**Cause:** Another OpenNext/Wrangler preview (`:8787`) or `next dev` (`initOpenNextCloudflareForDev` in `next.config.ts`, which spawns `workerd`) holds that directory. On Windows, PowerShell `Rename-Item` / Node `rmSync` may still fail after those processes exit.
+**Solution:** Stop preview (`x` in the Wrangler menu) and `npm run dev`. If the folder remains locked, `cmd /c "rmdir /s /q .open-next"` then retry. Do not delete `.open-next` while preview is running.
+**Code Reference:** `next.config.ts`, `npm run preview`, `npm run deploy`
 
 ### Identity stub tests fail after the list ships
 
@@ -1093,7 +1135,7 @@ Populate with real incidents during implementation. Anticipated issues:
 
 **Problem:** Schema changed in production by accident.
 **Cause:** `migrations apply` without `--local` or with `--remote`.
-**Solution:** Never run remote apply unless the user asks. If it happens, stop and tell the user.
+**Solution:** Never run remote apply unless the user asks. If it happens, stop and tell the user. When the user asks, apply **newer** migrations only on the **existing** `quizmaker-db`; do not create a new database or re-run `0001` if it is already applied.
 
 ---
 
@@ -1101,26 +1143,33 @@ Populate with real incidents during implementation. Anticipated issues:
 
 1. Read Overview, Hypothesis, and **TDD Process (mandatory)** first.
 2. Obey Scope (In / Out / Cut). Do not add sessions, AI generation, or extra question types.
-3. **Do not start a phase until the user names it and asks to implement it.** After this PRD is written, stop and wait for review. Do not begin Phase 1 unprompted.
+3. **Do not start a new product phase until the user names it and asks to implement it.** Phases 1–7 of this PRD are done. Do not begin extra features unprompted.
 4. **TDD is not optional.** For the named phase: write the Test Plan tests → run `npm test` (RED) → record the failure in this PRD → write production code → `npm test` (GREEN) → record it → stop.
 5. Use **Vitest** only. Ask before adding shadcn components or any npm package.
 6. Implement only the tests listed for that phase. Do not skip failure-path cases.
 7. Centralize D1 in `src/lib/`. Prepared statements with `?1`, `?2`. Never concatenate user input into SQL.
 8. Tick Acceptance Criteria only when mapped tests are green. Update Key Files, Troubleshooting, and Current Status.
 9. Cite code as `filepath:line-number`.
-10. Phase 7: record actual `npm test`, `lint`, and `build` output. Use `npm run preview` for D1/Workers. Never `npm run deploy`. Never remote D1 unless asked.
+10. Phase 7: record actual `npm test`, `lint`, and `build` output. Use `npm run preview` for D1/Workers. Never `npm run deploy`. Never remote D1 unless asked. If asked: same `quizmaker-db`, pending migrations only, then share the Workers URL.
 11. If D1 or Wrangler auth is required in Cursor Cloud, stop and say it must be run locally.
 12. Keep `AGENTS.md` and `ai-workspace/README.md` aligned with this PRD when the current sprint description changes.
 13. Do not reopen `register-login-logout_prd.md` implementation except to keep its tests green.
+14. Product phases 1–7 are done. Do not invent Phase 8 features from this PRD. Wait for a new PRD or an explicit ask.
 
 ---
 
 ## Current Status
 
-**Last Updated:** 2026-09-03
-**Current Phase:** Phase 7 - Acceptance-criteria confirmation and Workers-aware check
-**Status:** COMPLETED
-**Next Steps:** Sprint complete. Do not deploy or apply remote D1 migrations unless the user asks.
+**Last Updated:** 2026-09-04
+**Current Phase:** Phase 7 complete; post-sprint Cloudflare publish complete
+**Status:** COMPLETED (implemented, remote-migrated on existing D1, deployed)
+**Next Steps:** No further work in this PRD. `/mcq` is still not session-gated (Cut). Wait for a new sprint PRD or an explicit ask.
+
+**Production**
+- App: https://quizmaker-2026-bat6.chellaganesh.workers.dev
+- D1: `quizmaker-db` (`b5346f05-82dc-4fc3-9c46-382efdc665e4`), binding `DB` — `0001` (users) and `0002` (MCQ tables) on remote
+- Branch: https://github.com/chella-ES/quizmaker-2026/tree/feature/mcq-crud-aisprint2
+- Manual production check: user confirmed 2026-09-04, all good
 
 **TDD log:**
 - Phase 1 RED: missing `@/lib/mcq-schema` (1 failed suite; 86 prior tests still passed).
@@ -1132,25 +1181,27 @@ Populate with real incidents during implementation. Anticipated issues:
 - Phase 4 RED: list Create/table/actions missing (11 failed tests; heading/logout still green).
 - Phase 4 GREEN: 145/145 tests passed (`npm test`). `npm run lint` exited 0.
 - Phase 5 RED: missing `@/components/mcq/mcq-form` (1 failed suite; no tests collected).
-- Phase 5 GREEN: 159/159 tests passed (`npm test`). `npm run lint` exited 0. `npm run build` compiled and type-checked.
+- Phase 5 GREEN: 159/159 tests passed (`npm test`). `npm run lint` exited 0. `npm run build` compiled and type-checked. Later layout polish: choice text left, Remove right, correct-choice radio under the field (`05bf92f`).
 - Phase 6 RED: missing `@/components/mcq/mcq-preview` (1 failed suite; no tests collected).
 - Phase 6 GREEN: 168/168 tests passed (`npm test`). `npm run lint` exited 0. `npm run build` compiled and type-checked.
 - Phase 7 RED: not observed (7.7–7.12 files already present).
-- Phase 7 GREEN: 174/174 tests passed (`npm test`). `npm run lint` exited 0. `npm run build` exited 0. Local preview at `http://127.0.0.1:8787`. No `--remote`. No deploy.
+- Phase 7 GREEN: 174/174 tests passed (`npm test`). `npm run lint` exited 0. `npm run build` exited 0. Local preview at `http://127.0.0.1:8787`. No `--remote`. No deploy (yet).
+- Post-sprint (2026-09-04): remote `0002` on existing `quizmaker-db`; `npm run deploy` Worker URL above. Branch pushed.
 
 **Already true in the repo today:**
 
 - Teacher register, login, logout.
 - `/mcq` list table with greeting, signed-out hint, logout, Create, ellipsis actions, and delete confirm (Phase 4).
-- `/mcq/new` create and `/mcq/[qid]/edit` authoring form with 2–6 choices, Save, and Cancel (Phase 5).
+- `/mcq/new` create and `/mcq/[qid]/edit` authoring form with 2–6 choices, Save, and Cancel (Phase 5). Choice row: textbox left, **Remove choice** right, **click for correct choice** radio under the textbox.
 - `/mcq/[qid]/preview` shows stem and choices, hides correctness until submit, and records an attempt (Phase 6).
-- Phase 7 traceability tests 7.7–7.12; AC-01–AC-16 ticked from mapped tests and recorded commands.
+- Phase 7 traceability tests 7.7–7.12; AC-01–AC-16 ticked from mapped tests and recorded commands (AC-16 still true: remote migrate/deploy only after the user asked).
 - D1 `users` table and user service.
 - Vitest harness with a green identity-sprint suite.
 - shadcn `table`, `button`, `dialog`, `dropdown-menu`, `field`, `input`, `textarea`, `radio-group` available.
-- D1 `questions`, `choices`, and `attempts` schema contract + local migration (Phase 1).
+- D1 `questions`, `choices`, and `attempts` schema contract; local and remote `0002` on the same `quizmaker-db` (Phase 1 + 2026-09-04 ops).
 - MCQ service create, get, list, update, delete, and recordAttempt (Phase 2).
 - HTTP `GET`/`POST /api/mcq`, `GET`/`PUT`/`DELETE /api/mcq/[qid]`, `POST /api/mcq/[qid]/attempts` (Phase 3). No JWT or session cookies.
+- Production Worker `quizmaker-2026-bat6` bound to that D1.
 
 **Gaps this sprint will close (after approved phases):**
 

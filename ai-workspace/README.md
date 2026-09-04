@@ -24,4 +24,4 @@ Preferred framework: **Vitest** (Testing Library + jsdom for UI), as in `.cursor
 
 ## Current sprint
 
-**MCQ create / update / delete / attempt** — see the live PRD. Phases 1–7 are **COMPLETED**. Do not deploy or apply remote D1 migrations unless asked.
+**MCQ create / update / delete / attempt** — live PRD: [MCQ-crud-ops-ais2_prd.md](./MCQ-crud-ops-ais2_prd.md). Phases 1–7 are **COMPLETED**. On 2026-09-04 (user request) `0002_create_mcq_tables.sql` was applied on the existing remote `quizmaker-db` and the app was deployed to https://quizmaker-2026-bat6.chellaganesh.workers.dev. Do not deploy or apply remote D1 migrations again unless asked.

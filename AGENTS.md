@@ -7,11 +7,11 @@ agent conversation, so it describes only what is stable and true of the project.
 
 The Greenfield Quizmaker is a web app for teachers to build and collaborate on a
 shared multiple-choice question (MCQ) test bank. Teacher register, login, and
-logout exist and land on an empty `/mcq` stub. This sprint expands that stub
-into MCQ create, update, delete, preview, and attempt. The source of truth is
+logout land on `/mcq`, which lists, creates, edits, previews, deletes, and
+attempts questions. The source of truth for that sprint is
 `ai-workspace/MCQ-crud-ops-ais2_prd.md`. Implement one phase at a time,
 test-driven with Vitest (RED then GREEN), and only after the user reviews and
-explicitly asks.
+explicitly asks. Production Worker: `quizmaker-2026-bat6` on D1 `quizmaker-db`.
 
 ## Stack
 
