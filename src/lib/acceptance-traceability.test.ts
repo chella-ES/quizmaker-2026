@@ -38,4 +38,30 @@ describe("acceptance traceability", () => {
 		assertReadable("src/components/login/login-form.test.tsx");
 		assertReadable("src/components/mcq/mcq-stub.test.tsx");
 	});
+
+	it("Phase 1 MCQ schema tests exist", () => {
+		assertReadable("src/lib/mcq-schema.test.ts");
+	});
+
+	it("Phase 2 MCQ service tests exist", () => {
+		assertReadable("src/lib/services/mcq-service.test.ts");
+	});
+
+	it("Phase 3 MCQ route tests exist", () => {
+		assertReadable("src/app/api/mcq/route.test.ts");
+		assertReadable("src/app/api/mcq/[qid]/route.test.ts");
+		assertReadable("src/app/api/mcq/[qid]/attempts/route.test.ts");
+	});
+
+	it("Phase 4 list UI tests exist", () => {
+		assertReadable("src/components/mcq/mcq-stub.test.tsx");
+	});
+
+	it("Phase 5 form tests exist", () => {
+		assertReadable("src/components/mcq/mcq-form.test.tsx");
+	});
+
+	it("Phase 6 preview tests exist", () => {
+		assertReadable("src/components/mcq/mcq-preview.test.tsx");
+	});
 });

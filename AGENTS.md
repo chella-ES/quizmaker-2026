@@ -6,11 +6,12 @@ agent conversation, so it describes only what is stable and true of the project.
 ## Project
 
 The Greenfield Quizmaker is a web app for teachers to build and collaborate on a
-shared multiple-choice question (MCQ) test bank. This sprint covers teacher
-registration, username/password login, and logout, landing on an empty MCQ stub.
-The source of truth is `ai-workspace/register-login-logout_prd.md`. Implement
-one phase at a time, test-driven with Vitest (RED then GREEN), and only after
-the user reviews and explicitly asks.
+shared multiple-choice question (MCQ) test bank. Teacher register, login, and
+logout exist and land on an empty `/mcq` stub. This sprint expands that stub
+into MCQ create, update, delete, preview, and attempt. The source of truth is
+`ai-workspace/MCQ-crud-ops-ais2_prd.md`. Implement one phase at a time,
+test-driven with Vitest (RED then GREEN), and only after the user reviews and
+explicitly asks.
 
 ## Stack
 
@@ -24,7 +25,7 @@ the user reviews and explicitly asks.
 - **Cloudflare D1** — binding `DB`, database `quizmaker-db`
 - **zod** for user-service and API body validation
 
-Teacher register, login, and logout exist and land on an empty `/mcq` stub. There is no server session, JWT, or AI SDK. Ask before adding a new dependency.
+There is no server session, JWT, or AI SDK. Ask before adding a new dependency.
 
 ## Layout
 
